@@ -20,7 +20,7 @@
         </header>
 
         <main id="main">
-            <form id="main-form" method="POST" action="http://localhost:8000/presentation/" target="_self">
+            <form id="main-form" method="POST" action="http://localhost:8000/presentation/" target="_self" @submit="send($event)">
                 <fieldset class="slide main-slide" id="main-slide">
                     <h1>Основные данные</h1>
 
@@ -52,13 +52,24 @@
                 <fieldset class="slide" id="slide-2">
                     <h1>Слайд 2 - Описание проблем</h1>
 
-                    <div>
-                        <input type="text" name="issue" placeholder="Название проблемы" v-model="issue"/>
+                    <div v-for="i in problem.length">
+                        <div class="input-with-controls">
+                            <input type="text" name="issue" placeholder="Название проблемы" v-model="problem[i-1].issue"/>
+                            <button type="button" class="controls-red-button" @click="remove_problem(i-1)">
+                                <p>Удалить проблему</p>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                            </button>
+                        </div>
                         <br />
-                        <textarea name="target_audience" placeholder="Описание проблемы" v-model="target_audience"></textarea>
+                        <textarea name="target_audience" placeholder="Описание проблемы" v-model="problem[i-1].target_audience"></textarea>
                         <br />
-                        <textarea type="text" name="solution" placeholder="Решение проблемы" v-model="solution"></textarea>
+                        <textarea type="text" name="solution" placeholder="Решение проблемы" v-model="problem[i-1].solution"></textarea>
+                        <hr />
                     </div>
+
+                    <menu>
+                        <button type="button" class="click-button button-new" @click="add_problem()">добавить проблему</button>
+                    </menu>
                 </fieldset>
 
                 <fieldset class="slide" id="slide-3">
@@ -91,9 +102,17 @@ export default {
 
     data: function () {
         return {
-            name: '',
+            project_name: '',
+            short_description: '',
+            problem: [
+                {
+                    issue: '',
+                    target_audience: '',
+                    solution: '',
+                }
+            ],
             description: '',
-            something: ''
+            clients: ''
         }
     },
 
@@ -118,6 +137,28 @@ export default {
                 div.innerHTML = 'загрузить фото'
                 div.classList.remove('file-input-loaded')
             }
+        },
+
+        remove_problem: function (i) {
+            this.problem.splice(i, 1)
+        },
+
+        add_problem: function () {
+            this.problem.push({
+                issue: '',
+                target_audience: '',
+                solution: '',
+            })
+        },
+
+        send: function (event) {
+            event.preventDefault()
+
+            let form = new FormData(event.target)
+
+            form.forEach(function (value, key) {
+                console.log(key, value)
+            })
         }
     }
 }
@@ -221,6 +262,12 @@ html {
     animation-fill-mode: forwards;
 }
 
+
+body {
+    background-color: #f0f0f0;
+}
+
+
 #header {
     display: flex;
     flex-direction: row;
@@ -237,6 +284,7 @@ html {
     min-height: 60px;
     padding: 6px 20px;
     border-bottom: 3px solid var(--colour-semifront);
+    background-color: #FFFFFF;
     z-index: 1000;
 }
 
@@ -295,6 +343,7 @@ html {
 .slide {
     padding: 0 0 20px 0;
     border-radius: 20px;
+    background-color: var(--colour-preback);
     background-clip: border-box;
     box-shadow: 0 1px 4px 2px #000000;
     position: relative;
@@ -305,6 +354,7 @@ html {
     box-sizing: border-box;
     width: 100%;
     padding: 6px 20px;
+    margin-bottom: 10px;
     border-radius: 20px 20px 0 0;
     background: linear-gradient(to bottom right, var(--colour-decoration) 30%, var(--colour-decoration-alt));
     color: #ffffff;
@@ -317,7 +367,6 @@ html {
     width: 100%;
     padding: 10px 20px;
     margin: 10px 0;
-    background-color: var(--colour-preback);
 }
 
 .slide label {
@@ -398,6 +447,11 @@ html {
     background-color: var(--colour-decoration-light);
 }
 
+.input-with-controls button.controls-red-button:hover {
+    background-color: #e29090;
+    color: #000000;
+}
+
 
 .slide textarea {
     display: block;
@@ -412,6 +466,7 @@ html {
     color: #002d9e;
     font-weight: bold;
     resize: vertical;
+    transition: .25s;
 }
 .slide textarea:hover {
     border: 1px solid var(--colour-decoration);
@@ -552,6 +607,11 @@ html {
 }
 .slide input[type='date']:valid {
     border: 1px solid var(--colour-decoration);
+}
+
+
+.slide menu {
+    padding: 0 20px;
 }
 
 
