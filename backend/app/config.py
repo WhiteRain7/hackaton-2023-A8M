@@ -9,10 +9,7 @@ class Settings(BaseSettings):
     app_version: str = "0.0.1"
     media_path: Path = Path().absolute() / "app" / "media"
     templates_path: Path = Path().absolute() / "app" / "templates"
-    origins: list[AnyHttpUrl] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ]
+    origins: list[AnyHttpUrl] | list[str] = ["*"]
 
     class Config:
         env_file = ".env"
