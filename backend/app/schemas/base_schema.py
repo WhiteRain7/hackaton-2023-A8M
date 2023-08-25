@@ -73,10 +73,10 @@ class Contact(BaseModel):
 
 
 class CreatePresentation(BaseModel):
-    project_name: str = Field(description="Название проекта, первый слайд - Проект")
+    project_name: str = Field(description="Название проекта/компании, первый слайд - Проект")
     short_description: str = Field(
         description="Краткое описание проекта/ключевая ценность, первый слайд - Проект"
-    )
+    ) # TODO: на основе ии тащить
     problem: list[Problem] = Field(
         description="Проблемы, второй-четвертый слайд - Проблема и Решение"
     )
@@ -85,14 +85,14 @@ class CreatePresentation(BaseModel):
     # TODO Конкуренты 6 слайд, парсинг, на основе предыдущих 4 слайдов данные
     # TODO Бизнес-модель и ценообразование слайд 7
     clients: list[str] = Field(description="Клиенты, maybe 8 слайд")  # TODO изображения
-    revenue: str = Field(description="Выручка, 9 слайд - Финансы")
+    revenue: str | None = Field(description="Выручка, 9 слайд - Финансы") # Если компании нет
     clients_count: str = Field(description="Число клиентов, 9 слайд - Финансы")
     churn_rate: str = Field(description="Коэффициент оттока, 9 слайд - Финансы")
     inn: str | None = Field(
         description="Инн компании, если существует, для парсинга в checko"
     )
     is_exist: bool = Field(default=False, description="Существует ли компания, для инн")
-    # TODO: https://checko.ru/company/anspot-1217700374495 парсинг Конкуренты + финансы (выручка) + Контакты
+    # TODO: https://checko.ru/company/anspot-1217700374495 парсинг Конкуренты + финансы (выручка + капитализация по годам) + Контакты
     members: list[Member] = Field(description="Члены команды, 10 слайд - Команда")
     investors: list[Investor] | None = Field(
         description="Инвесторы, 11 слайд - Инвесторы"
@@ -104,3 +104,4 @@ class CreatePresentation(BaseModel):
         description="Дорожная карта, 13 слайд - Дорожная карта"
     )
     contacts: list[Contact] = Field(description="Контакты, 14 слайд - Контакты")
+    sphere: str = Field(description="Сфера деятельности компаний, для картинок/расчётов")

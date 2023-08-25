@@ -12,4 +12,4 @@ async def create_presentation(
     service = Depends(BaseSevice)
 ):
     """Метод создания презентации"""
-    return await service.create_presentation()
+    return await service.create_presentation(data)
