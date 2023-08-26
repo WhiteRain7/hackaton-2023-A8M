@@ -1828,6 +1828,7 @@ export default {
             // investing_rounds spendings from str to ints
 
             for (let i = 0; i < body.investing_rounds.length; i++) {
+                body.investing_rounds[i].amount = body.investing_rounds[i].amount * Number(body.investing_rounds[i].amount_modifier)
                 for (let i2 = 0; i2 < body.investing_rounds[i].spending.length; i2++) {
                     body.investing_rounds[i].spending[i2].percent = body.investing_rounds[i].spending[i2].percent.toString()
                 }
@@ -1884,6 +1885,7 @@ export default {
             // investing_rounds spendings from ints to strs
 
             for (let i = 0; i < body.investing_rounds.length; i++) {
+                body.investing_rounds[i].amount = Math.floor(body.investing_rounds[i].amount / Number(body.investing_rounds[i].amount_modifier))
                 for (let i2 = 0; i2 < body.investing_rounds[i].spending.length; i2++) {
                     body.investing_rounds[i].spending[i2].percent = body.investing_rounds[i].spending[i2].percent.toString()
                 }
