@@ -72,6 +72,12 @@ class Contact(BaseModel):
     value: str = Field(description="Значение, 14 слайд - Контакты")
 
 
+class BusinessUnit(BaseModel):
+    name: str = Field(description="Название, 7 слайд - Бизнес-модель")
+    income: str = Field(description="Доход, 7 слайд - Бизнес-модель")
+    revenue_share: str = Field(description="Доля прибыли, 7 слайд - Бизнес-модель")
+
+
 class CreatePresentation(BaseModel):
     project_name: str = Field(description="Название проекта/компании, первый слайд - Проект")
     short_description: str = Field(
@@ -83,7 +89,7 @@ class CreatePresentation(BaseModel):
     description: str = Field(description="Описание, третий слайд - Описание")
     # TODO: TAM SAM SOM слайд 5 - Рынок
     # TODO Конкуренты 6 слайд, парсинг, на основе предыдущих 4 слайдов данные
-    # TODO Бизнес-модель и ценообразование слайд 7
+    business_units: list[BusinessUnit] = Field(description="Бизнес-юниты, 7 слайд - Бизнес-модель")
     clients: list[str] = Field(description="Клиенты, maybe 8 слайд")  # TODO изображения
     revenue: str | None = Field(description="Выручка, 9 слайд - Финансы") # Если компании нет
     clients_count: str = Field(description="Число клиентов, 9 слайд - Финансы")
