@@ -29,7 +29,12 @@ from pptx.enum.chart import XL_LABEL_POSITION
 
 from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_SHAPE
 import random
+import httpx
 
+import io
+import base64
+from PIL import Image, PngImagePlugin
+from ..hugchat.api import call_api
 
 class BaseSevice:
     def generate_template(self) -> Presentation:
@@ -97,13 +102,19 @@ class BaseSevice:
         """Генерация четвёртого слайда - Решение"""
         self.generate_table_slide(prs, data, "Решение", lambda x: x.solution)
 
-    def generate_description_slide(self, prs: Presentation, data: CreatePresentation) -> None:
+    async def generate_description_slide(self, prs: Presentation, data: CreatePresentation) -> None:
         """Генерация третьего слайда - Описание"""
-        slide = self.create_slide(prs, 1, "Описание")
+        slide = self.create_slide(prs, 3, "Описание")
         description = slide.placeholders[1]
-        # print(dir())
-        description.text_frame.clear() # не работает
-        # TODO: картинка нужна здесь
+
+        prompt = self.generate_prompt(data.description)
+        image_stream = await self.generate_image(f'description image high quality {prompt}')
+        left = Inches(7.3)
+        top = self.get_top_min(slide) + Inches(0.5)
+        width = Inches(4.5)
+        height = Inches(4.5)
+        
+        slide.shapes.add_picture(image_stream, left, top, width, height)
         description.text = data.description
 
     def generate_members_slide(self, prs: Presentation, data: CreatePresentation):
@@ -273,7 +284,7 @@ class BaseSevice:
 
         self.generate_title_slide(prs, data)
         self.generate_problems_slide(prs, data)
-        self.generate_description_slide(prs, data)
+        await self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
         self.generate_market_slide(prs, data)
         if (len(data.opponents)):
@@ -292,6 +303,22 @@ class BaseSevice:
         return FileResponse(
             file, headers={"Content-Disposition": f'attachment; filename="{file.name}"'}, background=BackgroundTask(self.delete_file, file)
         )  # background=BackgroundTask(self.delete_file, file)
+
+    def generate_prompt(self, value: str) -> str:
+        return call_api(f"create an 5 base key words list based on next text separated with comma on english:{value}").split(":")[-1].replace("\n", ", ").replace(" ", ", ")
+
+    async def generate_image(self, prompt: str) -> io.BytesIO:
+        async with httpx.AsyncClient(timeout=1000) as client:
+            try:
+                r = await client.post(f"{settings.stable_diffusion_url}sdapi/v1/txt2img", json={"prompt": prompt, "steps":30, "width": 512,"height": 512,})
+            except:
+                # TODO достать изображение из датасета
+                pass
+            else:
+                r = r.json()
+                for i in r['images']:
+                    image = io.BytesIO(base64.b64decode(i.split(",",1)[0]))
+                    return image
 
     async def delete_file(self, file):
         await anyio.run_sync_in_worker_thread(file.unlink)

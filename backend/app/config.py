@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     hugchat_pwd: str
     chatbot: hugchat.ChatBot | None = None
     cookie_path: Path = Path().absolute() / "cookies_snapshot"
+    stable_diffusion_url: AnyHttpUrl = "http://127.0.0.1:7860/"
 
 
 settings = Settings()
