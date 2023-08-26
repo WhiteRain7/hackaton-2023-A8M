@@ -60,6 +60,7 @@ class TypeContact(str, Enum):
     email = "email"
     site = "site"
     vk = "vk"
+    ok = "ok"
     telegram = "telegram"
     whatsapp = "whatsapp"
     viber = "viber"
