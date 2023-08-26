@@ -6,7 +6,14 @@
             </menu>
 
             <nav id="header-nav">
-                <button type="button" @click="scroll_to('main-slide')">
+                <button
+                    type="button"
+                    @click="scroll_to('main-slide')"
+                    :class="{
+                        'nav-not-empty': project_name || sphere,
+                        'nav-fulfilled': project_name && sphere
+                    }"
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="32" height="32"><path d="M453-280h60v-240h-60v240Zm26.982-314q14.018 0 23.518-9.2T513-626q0-14.45-9.482-24.225-9.483-9.775-23.5-9.775-14.018 0-23.518 9.775T447-626q0 13.6 9.482 22.8 9.483 9.2 23.5 9.2Zm.284 514q-82.734 0-155.5-31.5t-127.266-86q-54.5-54.5-86-127.341Q80-397.681 80-480.5q0-82.819 31.5-155.659Q143-709 197.5-763t127.341-85.5Q397.681-880 480.5-880q82.819 0 155.659 31.5Q709-817 763-763t85.5 127Q880-563 880-480.266q0 82.734-31.5 155.5T763-197.684q-54 54.316-127 86Q563-80 480.266-80Zm.234-60Q622-140 721-239.5t99-241Q820-622 721.188-721 622.375-820 480-820q-141 0-240.5 98.812Q140-622.375 140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>
                 </button>
                 <navButton
@@ -23,7 +30,7 @@
                 />
                 <navButton
                     :nav_id="4"
-                    :checks="[]"
+                    :checks="custom_check_common(business_units)"
                 />
                 <navButton
                     :nav_id="5"
@@ -31,27 +38,31 @@
                 />
                 <navButton
                     :nav_id="6"
-                    :checks="[...[revenue != 0, clients_count != 0, churn_rate != 0], ...(is_exist ? [inn != ''] : [])]"
+                    :checks="[...[revenue != 0, clients_count != 0, churn_rate != 0], ...(is_exist ? [ogrn != ''] : [])]"
                 />
                 <navButton
                     :nav_id="7"
-                    :checks="[]"
+                    :checks="custom_check_common(tracktion)"
                 />
                 <navButton
                     :nav_id="8"
-                    :checks="custom_check_members()"
+                    :checks="custom_check_common(members)"
                 />
                 <navButton
                     :nav_id="9"
-                    :checks="[...custom_check_investors(), ...custom_check_invests(), ...custom_check_spendings()]"
+                    :checks="custom_check_market()"
                 />
                 <navButton
                     :nav_id="10"
-                    :checks="custom_check_roadmap()"
+                    :checks="[...custom_check_common(investors), ...custom_check_invests(), ...custom_check_spendings()]"
                 />
                 <navButton
                     :nav_id="11"
-                    :checks="custom_check_contacts()"
+                    :checks="custom_check_common(roadmap)"
+                />
+                <navButton
+                    :nav_id="12"
+                    :checks="custom_check_common(contacts)"
                 />
             </nav>
 
@@ -148,7 +159,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-1">
-                    <h1>Слайд 1 - Проект</h1>
+                    <h1>Проект</h1>
 
                     <div>
                         <label for="project_name-2">Название проекта</label>
@@ -162,7 +173,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-2">
-                    <h1>Слайд 2/4 - Целевая аудитория</h1>
+                    <h1>Целевая аудитория</h1>
 
                     <div v-for="i in problem.length">
                         <div class="input-with-controls">
@@ -195,7 +206,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-3">
-                    <h1>Слайд 3 - Описание</h1>
+                    <h1>Описание</h1>
 
                     <div>
                         <label for="description">Описание</label>
@@ -215,7 +226,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-4">
-                    <h1>Слайд 4 - Бизнес-модели</h1>
+                    <h1>Бизнес-модели</h1>
 
                     <div v-for="i in business_units.length">
                         <div class="input-with-controls">
@@ -281,7 +292,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-5">
-                    <h1>Слайд 5 - Клиенты</h1>
+                    <h1>Клиенты</h1>
 
                     <div v-for="i in clients.length">
                         <div class="input-with-controls">
@@ -301,13 +312,13 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-6">
-                    <h1>Слайд 6 - Прибыль</h1>
+                    <h1>Прибыль</h1>
 
                     <div>
                         <label for="revenue">Прибыль</label>
                         <div class="input-number-with-controls">
                             <input type="number" id="revenue" placeholder="Прибыль" v-model="revenue"/>
-                            <input type="text" id="revenue_suffix" list="amount_list" class="small-input" placeholder="ед." v-model="revenue_suffix"/>
+                            <input type="text" list="amount_list" class="small-input" placeholder="ед." v-model="revenue_suffix"/>
                             <div>
                                 <button type="button" class="controls-red-button" @click="revenue -= 1">
                                     <svg
@@ -392,8 +403,8 @@
                     </div>
 
                     <div>
-                        <label for="inn">ОГРН</label>
-                        <input type="text" id="inn" placeholder="ОГРН" @change="request_ogrn($event.target.value)" v-model="inn" :disabled="is_exist ? null : 'disabled'" />
+                        <label for="ogrn">ОГРН</label>
+                        <input type="text" id="ogrn" placeholder="ОГРН" @change="request_ogrn($event.target.value)" v-model="ogrn" :disabled="is_exist ? null : 'disabled'" />
                         <div id="org_data">
 
                         </div>
@@ -401,7 +412,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-7">
-                    <h1>Слайд 7 - Трекшн</h1>
+                    <h1>Трекшн</h1>
 
                     <div v-for="i in tracktion.length">
                         <label>Год и заголовок</label>
@@ -428,7 +439,7 @@
                         <label>Прибыль и капитализация</label>
                         <div class="input-number-with-controls with-margin">
                             <input type="number" placeholder="Прибыль в этом году" title="Прибыль в этом году" v-model="tracktion[i-1].revenue"/>
-                            <input type="text" id="revenue_suffix" list="amount_list" class="small-input" placeholder="ед." v-model="revenue_suffix"/>
+                            <input type="text" list="amount_list" class="small-input" placeholder="ед." v-model="tracktion[i-1].tracktion_revenue_suffix"/>
                             <div>
                                 <button type="button" class="controls-red-button" @click="tracktion[i-1].revenue -= 1">
                                     <svg
@@ -489,7 +500,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-8">
-                    <h1>Слайд 8 - Команда</h1>
+                    <h1>Команда</h1>
 
                     <div v-for="i in members.length">
                         <div class="input-with-controls">
@@ -523,14 +534,53 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-9">
-                    <h1>Слайд 9 - Спонсоры</h1>
+                    <h1>Рынок</h1>
+
+                    <div v-for="i in market.length">
+                        <label>Рынок {{ market[i-1].type }}</label>
+
+                        <input type="text" name="market" placeholder="Название рынка" v-model="market[i-1].name" />
+
+                        <div class="input-number-with-controls with-margin">
+                            <input type="number" placeholder="Объём рынка" title="Объём рынка" v-model="market[i-1].volume"/>
+                            <input type="text" list="amount_list" class="small-input" placeholder="ед." v-model="market[i-1].volume_suffix"/>
+                            <div>
+                                <button type="button" class="controls-red-button" @click="market[i-1].volume -= 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M200-450v-60h560v60H200Z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="controls-green-button" @click="market[i-1].volume = Number(market[i-1].volume) + 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M450-450H200v-60h250v-250h60v250h250v60H510v250h-60v-250Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr />
+                    </div>
+                </fieldset>
+
+                <fieldset class="slide" id="slide-10">
+                    <h1>Спонсоры</h1>
 
                     <div>
                         <label>Спонсоры</label>
                         <div v-for="i in investors.length">
                             <div class="input-with-controls">
                                 <input type="text" placeholder="Спонсор" v-model="investors[i-1].name" />
-                                <button type="button" class="controls-red-button" @click="remove_investor(i-1, 'members')">
+                                <button type="button" class="controls-red-button" @click="remove_investor(i-1)">
                                     <p>Удалить спонсора</p>
                                     <div>
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
@@ -603,9 +653,9 @@
                                 <option value="" selected="selected">Стадия</option>
                                 <option value="pre-seed">pre-seed</option>
                                 <option value="seed">seed</option>
-                                <option value="раунд A">раунд A</option>
-                                <option value="раунд B">раунд B</option>
-                                <option value="раунд C">раунд C</option>
+                                <option value="раунд А">раунд А</option>
+                                <option value="раунд Б">раунд Б</option>
+                                <option value="раунд С">раунд С</option>
                                 <option value="IPO">IPO</option>
                             </select>
                         </div>
@@ -615,7 +665,7 @@
                             <label>Распределение инвестиций в процентах</label>
                             <div v-for="i2 in investing_rounds[i-1].spending.length" class="with-margin">
                                 <div class="input-with-controls">
-                                    <input type="text" placeholder="Название" v-model="investing_rounds[i-1].spending[i2-1].name" />
+                                    <input type="text" name="invest" placeholder="Название" v-model="investing_rounds[i-1].spending[i2-1].name" />
                                     <button type="button" class="controls-red-button" @click="remove_spending(i-1, i2-1)">
                                         <p>Удалить расход</p>
                                         <div>
@@ -653,8 +703,8 @@
                     </menu-->
                 </fieldset>
 
-                <fieldset class="slide" id="slide-10">
-                    <h1>Слайд 10 - Дорожная карта проекта</h1>
+                <fieldset class="slide" id="slide-11">
+                    <h1>Дорожная карта проекта</h1>
 
                     <div v-for="i in roadmap.length">
                         <div class="input-with-controls">
@@ -683,8 +733,8 @@
                     </menu>
                 </fieldset>
 
-                <fieldset class="slide" id="slide-11">
-                    <h1>Слайд 11 - Контакты</h1>
+                <fieldset class="slide" id="slide-12">
+                    <h1>Контакты</h1>
 
                     <div v-for="i in contacts.length">
                         <div>
@@ -714,31 +764,31 @@
                         </div>
 
                         <div class="with-margin" v-if="contacts[i-1].type == 'phone'">
-                            <input type="tel" placeholder="+7 (___) ___-__-__" v-model="contacts[i-1].value" />
+                            <input type="tel" name="tel" placeholder="+7 (___) ___-__-__" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'email'">
-                            <input type="email" placeholder="mail@example.com" v-model="contacts[i-1].value" />
+                            <input type="email" name="email" placeholder="mail@example.com" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'site'">
-                            <input type="url" placeholder="https://example.com" v-model="contacts[i-1].value" />
+                            <input type="url" name="site" placeholder="https://example.com" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'vk'">
-                            <input type="text" placeholder="https://vk.com/userid" v-model="contacts[i-1].value" />
+                            <input type="text" name="vk" placeholder="https://vk.com/userid" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'ok'">
-                            <input type="text" placeholder="https://ok.ru/userid" v-model="contacts[i-1].value" />
+                            <input type="text" name="ok" placeholder="https://ok.ru/userid" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'telegram'">
-                            <input type="text" placeholder="https://t.me/userid" v-model="contacts[i-1].value" />
+                            <input type="text" name="telegram" placeholder="https://t.me/userid" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else>
-                            <input type="text" placeholder="Значение" v-model="contacts[i-1].value" />
+                            <input type="text" :name="contacts[i-1].type" placeholder="Значение" v-model="contacts[i-1].value" />
                         </div>
 
                         <hr />
@@ -804,7 +854,7 @@ export default {
                     year: 0,
                     caption: '',
                     revenue: 0,
-                    revenue_suffix: '',
+                    tracktion_revenue_suffix: '',
                     capitalization: 0
                 }
             ],
@@ -813,8 +863,9 @@ export default {
             revenue_suffix: '',
             clients_count: 0,
             churn_rate: 0,
-            inn: "",
+            ogrn: "",
             is_exist: false,
+            opponents: [],
 
             members: [
                 {
@@ -835,6 +886,7 @@ export default {
                     amount: 0,
                     amount_modifier: "1",
                     stage: "",
+                    fraction: "",
                     spending: [
                         {
                             name: "",
@@ -859,7 +911,28 @@ export default {
                 }
             ],
 
-            sphere: ''
+            sphere: '',
+
+            market: [
+                {
+                    type: 'TAM',
+                    name: '',
+                    volume: 0,
+                    volume_suffix: '',
+                },
+                {
+                    type: 'SAM',
+                    name: '',
+                    volume: 0,
+                    volume_suffix: '',
+                },
+                {
+                    type: 'SOM',
+                    name: '',
+                    volume: 0,
+                    volume_suffix: '',
+                }
+            ],
         };
     },
     methods: {
@@ -1042,6 +1115,56 @@ export default {
             }
         },
 
+        custom_check_common (list_of_dicts) {
+            if (list_of_dicts.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < list_of_dicts.length; i++) {
+                if (!any_is_true) {
+                    for (let key in list_of_dicts[i]) {
+                        if (list_of_dicts[i][key]) {
+                            any_is_true = true
+                        }
+                    }
+                }
+            }
+
+            for (let i = 0; i < list_of_dicts.length; i++) {
+                for (let key in list_of_dicts[i]) {
+                    if (!list_of_dicts[i][key]) {
+                        return [any_is_true, false]
+                    }
+                }
+            }
+
+            return [true]
+        },
+
+        custom_check_market () {
+            if (this.market.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.market.length; i++) {
+                if (!any_is_true) {
+                    if (this.market[i].name != '' ||
+                        this.market[i].volume) {
+                            any_is_true = true
+                        }
+                }
+            }
+
+            for (let i = 0; i < this.market.length; i++) {
+                if (this.market[i].name == '' ||
+                    !this.market[i].volume) {
+                        return [any_is_true, false]
+                    }
+            }
+
+            return [true]
+        },
+
         custom_check_promblems () {
             if (this.problem.length == 0) return [false]
 
@@ -1055,57 +1178,14 @@ export default {
                             any_is_true = true
                     }
                 }
+            }
 
+            for (let i = 0; i < this.problem.length; i++) {
                 if (this.problem[i].target_audience == '' ||
                     this.problem[i].issue == '' ||
                     this.problem[i].solution == '') {
                         return [any_is_true, false]
                 }
-            }
-            return [true]
-        },
-
-        custom_check_members () {
-            if (this.members.length == 0) return [false]
-
-            let any_is_true = false
-
-            for (let i = 0; i < this.members.length; i++) {
-                if (!any_is_true) {
-                    if (this.members[i].full_name != '' ||
-                        this.members[i].proffesion != '' ||
-                        this.members[i].photo != null) {
-                            any_is_true = true
-                    }
-                }
-
-                if (this.members[i].full_name == '' ||
-                    this.members[i].proffesion == '' ||
-                    this.members[i].photo == null) {
-                        return [any_is_true, false]
-                }
-            }
-
-            return [true]
-        },
-
-        custom_check_investors () {
-            if (this.investors.length == 0) return [false]
-
-            let any_is_true = false
-
-            for (let i = 0; i < this.investors.length; i++) {
-                if (!any_is_true) {
-                    if (this.investors[i].name != '' ||
-                        this.investors[i].image != null) {
-                            any_is_true = true
-                        }
-                }
-
-                if (this.investors[i].name == '' ||
-                    this.investors[i].image == null) {
-                        return [any_is_true, false]
-                    }
             }
 
             return [true]
@@ -1123,7 +1203,9 @@ export default {
                             any_is_true = true
                         }
                 }
+            }
 
+            for (let i = 0; i < this.investing_rounds.length; i++) {
                 if (this.investing_rounds[i].amount == 0 ||
                     this.investing_rounds[i].stage == '') {
                         return [any_is_true, false]
@@ -1150,57 +1232,11 @@ export default {
                 }
 
                 for (let i2 = 0; i2 < this.investing_rounds[i].spending.length; i2++) {
-                        if (this.investing_rounds[i].spending[i2].name == '' ||
-                            this.investing_rounds[i].spending[i2].percent == 0) {
+                    if (this.investing_rounds[i].spending[i2].name == '' ||
+                        this.investing_rounds[i].spending[i2].percent == 0) {
                             return [any_is_true, false]
-                            }
-                    }
-            }
-
-            return [true]
-        },
-
-        custom_check_roadmap () {
-            if (this.roadmap.length == 0) return [false]
-
-            let any_is_true = false
-
-            for (let i = 0; i < this.roadmap.length; i++) {
-                if (!any_is_true) {
-                    if (this.roadmap[i].name != '' ||
-                        this.roadmap[i].start_date != '' ||
-                        this.roadmap[i].end_date != '') {
-                            any_is_true = true
                         }
                 }
-
-                if (this.roadmap[i].name == '' ||
-                    this.roadmap[i].start_date == '' ||
-                    this.roadmap[i].end_date == '') {
-                        return [any_is_true, false]
-                    }
-            }
-
-            return [true]
-        },
-
-        custom_check_contacts () {
-            if (this.contacts.length == 0) return [false]
-
-            let any_is_true = false
-
-            for (let i = 0; i < this.contacts.length; i++) {
-                if (!any_is_true) {
-                    if (this.contacts[i].type != '' ||
-                        this.contacts[i].value != '') {
-                            any_is_true = true
-                        }
-                }
-
-                if (this.contacts[i].type == '' ||
-                    this.contacts[i].value == '') {
-                        return [any_is_true, false]
-                    }
             }
 
             return [true]
@@ -1253,7 +1289,7 @@ export default {
                 year: 0,
                 caption: '',
                 revenue: 0,
-                revenue_suffix: '',
+                tracktion_revenue_suffix: '',
                 capitalization: 0
             });
         },
@@ -1363,6 +1399,8 @@ export default {
                     const div = document.getElementById('org_data')
 
                     if (div) {
+                        div.innerHTML = ''
+
                         for (let key in data['contacts']) {
                             let h2 = document.createElement('h2')
                             let p = document.createElement('p')
@@ -1373,6 +1411,41 @@ export default {
                             div.appendChild(document.createElement('br'))
                         }
                     }
+
+                    this.opponents = []
+                    for (let opponent of data['competitors']) {
+                        if (opponent['name']) {
+                            this.opponents.push(opponent['name'])
+                        }
+                    }
+
+                    let contacts = this.contacts
+
+                    function try_insert(type, data) {
+                        if (!data) return
+
+                        let any_key = false
+                        for (let contact of contacts) {
+                            if (contact.type == type) {
+                                contact.value = data
+                                any_key = true
+                                break
+                            }
+                        }
+                        if (!any_key) {
+                            contacts.push({
+                                type: type,
+                                value: data
+                            })
+                        }
+                    }
+
+                    data = data['contacts']
+
+                    try_insert('email', data['Электронная почта'])
+                    try_insert('phone', data['Телефон'])
+                    try_insert('site' , data['Веб-сайт'])
+                    try_insert('other', data['Соицальные сети'])
                 })
         },
 
@@ -1387,17 +1460,40 @@ export default {
                 business_units: this.business_units,
                 clients: this.clients,
                 tracktion: this.tracktion,
-                revenue: this.revenue.toString() + ' ' + this.revenue_suffix ?? '',
+                revenue: this.revenue.toString(), //+ ' ' + this.revenue_suffix ?? '',
                 clients_count: this.clients_count.toString(),
                 churn_rate: this.churn_rate.toString(),
-                inn: this.inn,
+                ogrn: this.ogrn,
+                inn: '',
+                opponents: this.opponents,
                 is_exist: this.is_exist,
                 members: this.members,
                 investors: this.investors,
                 investing_rounds: this.investing_rounds,
                 roadmap: this.roadmap,
                 contacts: this.contacts,
-                sphere: this.sphere
+                sphere: this.sphere,
+                market: this.market
+            }
+
+            // business_units from str to ints
+
+            for (let i = 0; i < body.business_units.length; i++) {
+                body.business_units[i].income = body.business_units[i].income.toString() + ' ' + (body.business_units[i].income_suffix ?? '')
+                body.business_units[i].revenue_share = body.business_units[i].revenue_share.toString()
+
+                body.business_units[i].income.trim()
+                body.business_units[i].revenue_share.trim()
+            }
+
+            // tracktion from str to ints
+
+            for (let i = 0; i < body.tracktion.length; i++) {
+                body.tracktion[i].revenue = body.tracktion[i].revenue.toString() + ' ' + (body.tracktion[i].tracktion_revenue_suffix ?? '')
+                body.tracktion[i].capitalization = body.tracktion[i].capitalization.toString()
+
+                body.tracktion[i].revenue.trim()
+                body.tracktion[i].capitalization.trim()
             }
 
             // investing_rounds spendings from str to ints
@@ -1408,7 +1504,15 @@ export default {
                 }
             }
 
-            // console.log(body)
+            // market from str to ints
+
+            for (let i = 0; i < body.market.length; i++) {
+                body.market[i].volume = body.market[i].volume.toString() + ' ' + (body.market[i].volume_suffix ?? '')
+
+                body.market[i].market.trim()
+            }
+
+            console.log(body)
 
             var requestOptions = {
                 method: 'POST',
@@ -1431,6 +1535,36 @@ export default {
             .catch(error => {
                 console.error('Error fetching or downloading the PPTX file:', error);
             })
+
+            /// convert back ///
+
+            // business_units from ints to strs
+
+            for (let i = 0; i < body.business_units.length; i++) {
+                body.business_units[i].income = Number(body.business_units[i].income.split(' ')[0])
+                body.business_units[i].revenue_share = Number(body.business_units[i].revenue_share)
+            }
+
+            // tracktion from ints to strs
+
+            for (let i = 0; i < body.tracktion.length; i++) {
+                body.tracktion[i].revenue = Number(body.tracktion[i].revenue.split(' ')[0])
+                body.tracktion[i].capitalization = Number(body.tracktion[i].capitalization)
+            }
+
+            // investing_rounds spendings from ints to strs
+
+            for (let i = 0; i < body.investing_rounds.length; i++) {
+                for (let i2 = 0; i2 < body.investing_rounds[i].spending.length; i2++) {
+                    body.investing_rounds[i].spending[i2].percent = body.investing_rounds[i].spending[i2].percent.toString()
+                }
+            }
+
+            // market from ints to strs
+
+            for (let i = 0; i < body.market.length; i++) {
+                body.market[i].volume = Number(body.market[i].volume.split(' ')[0])
+            }
         },
 
         reset: function () {
@@ -1458,7 +1592,7 @@ export default {
                     year: 0,
                     caption: '',
                     revenue: 0,
-                    revenue_suffix: '',
+                    tracktion_revenue_suffix: '',
                     capitalization: 0,
                 }
             ];
@@ -1466,7 +1600,7 @@ export default {
             this.revenue_suffix = '';
             this.clients_count = 0;
             this.churn_rate = 0;
-            this.inn = "";
+            this.ogrn = "";
             this.is_exist = false;
             this.members = [
                 {
@@ -1486,6 +1620,7 @@ export default {
                     amount: 0,
                     amount_modifier: "1",
                     stage: "",
+                    fraction: "",
                     spending: [
                         {
                             name: "",
@@ -1727,6 +1862,7 @@ body {
     border-radius: 20px;
     background-color: var(--colour-preback);
     background-clip: border-box;
+    overflow: hidden;
     box-shadow: 0 1px 4px 2px #000000;
     position: relative;
 }
@@ -1737,7 +1873,6 @@ body {
     width: 100%;
     padding: 6px 20px;
     margin-bottom: 10px;
-    border-radius: 20px 20px 0 0;
     background: linear-gradient(to bottom right, var(--colour-decoration) 30%, var(--colour-decoration-alt));
     color: #ffffff;
     text-align: center;
@@ -2222,6 +2357,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: 20px;
+    width: 100%;
 }
 
 #ai-menu {
@@ -2276,6 +2412,19 @@ body {
 }
 #ai-menu form button:hover {
     background-color: var(--colour-decoration-alt);
+}
+
+.nav-not-empty {
+    background-color: #c9bd88 !important;
+}
+.nav-not-empty:hover {
+    background-color: #b1a573 !important;
+}
+.nav-fulfilled {
+    background-color: #88c99b !important;
+}
+.nav-fulfilled:hover {
+    background-color: #6cad80 !important;
 }
 
 
