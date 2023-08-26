@@ -15,7 +15,7 @@
                 />
                 <navButton
                     :nav_id="2"
-                    :checks="[problem.length > 0]"
+                    :checks="custom_check_promblems()"
                 />
                 <navButton
                     :nav_id="3"
@@ -23,11 +23,35 @@
                 />
                 <navButton
                     :nav_id="4"
-                    :checks="[...clients.values()]"
+                    :checks="[]"
                 />
                 <navButton
                     :nav_id="5"
-                    :checks="[revenue != 0, clients_count != 0, churn_rate != 0]"
+                    :checks="[...(clients.length ? [...clients.values()] : [])]"
+                />
+                <navButton
+                    :nav_id="6"
+                    :checks="[...[revenue != 0, clients_count != 0, churn_rate != 0], ...(is_exist ? [inn != ''] : [])]"
+                />
+                <navButton
+                    :nav_id="7"
+                    :checks="[]"
+                />
+                <navButton
+                    :nav_id="8"
+                    :checks="custom_check_members()"
+                />
+                <navButton
+                    :nav_id="9"
+                    :checks="[...custom_check_investors(), ...custom_check_invests(), ...custom_check_spendings()]"
+                />
+                <navButton
+                    :nav_id="10"
+                    :checks="custom_check_roadmap()"
+                />
+                <navButton
+                    :nav_id="11"
+                    :checks="custom_check_contacts()"
                 />
             </nav>
 
@@ -36,15 +60,40 @@
             </menu>
         </header>
 
+        <dialog id="ai-panel" hidden>
+            <div>
+                <div id="loader" v-if="ai_status != 'done'">
+                    <p v-if="ai_status == 'waiting'">Сейчас нет операций</p>
+                    <p v-else-if="ai_status == 'loading'">Подождите, текст формируется...</p>
+                    <p v-else-if="ai_status == 'missing'">Недостаточно данных с других полей</p>
+                    <p v-else-if="ai_status == 'error'">Произошла ошибка</p>
+
+                    <span v-if="ai_status == 'loading'"></span>
+                    <button v-else></button>
+                </div>
+
+                <div v-else id="ai-content">
+                    {{ ai_text }}
+                </div>
+            </div>
+            <menu id="ai-menu">
+                <input type="text" />
+                <form method="dialog">
+                    <button type="button" value="submit" @click="close_ai('submit')">применить</button>
+                    <button type="button" value="close" @click="close_ai('close')">закрыть</button>
+                </form>
+            </menu>
+        </dialog>
+
         <main id="main">
             <form id="main-form" method="POST" action="http://localhost:8000/presentation/" target="_self" @submit="send($event)">
                 <fieldset class="slide main-slide" id="main-slide">
                     <h1>Основные данные</h1>
 
                     <div>
-                        <label for="project_name">Название</label>
+                        <label for="project_name">Название проекта</label>
                         <div class="input-with-controls">
-                            <input type="text" name="project_name" id="project_name" placeholder="Название" v-model="project_name" />
+                            <input type="text" name="project_name" id="project_name" placeholder="Название проекта" v-model="project_name" />
                             <button type="button">
                                 <p>вариант от ИИ</p>
                                 <div>
@@ -53,14 +102,57 @@
                             </button>
                         </div>
                     </div>
+
+                    <div>
+                        <label for="sphere">Сфера деятельности</label>
+                        <input type="text" id="sphere" list="sphere-list" placeholder="Сфера деятельности" v-model="sphere" />
+                        <datalist id="sphere-list">
+                            <option value="Advertising & Marketing">Реклама и маркетинг</option>
+                            <option value="Aero & SpaceTech">Аэро- и космические технологии</option>
+                            <option value="AgroTech">Агрокультура</option>
+                            <option value="AI">ИИ</option>
+                            <option value="AR/VR">AR/VR</option>
+                            <option value="BeautyTech">Косметология</option>
+                            <option value="BigData">Большие данные</option>
+                            <option value="Business Intelligence">Бизнес-интеллект</option>
+                            <option value="Business Software">Бизнес-программирование</option>
+                            <option value="CleanTech">Клининг</option>
+                            <option value="ConstructionTech">Строительство</option>
+                            <option value="Consumer Goods & Services">Товары и услуги</option>
+                            <option value="Cybersecurity">Кибербезопасность</option>
+                            <option value="E-commerce">Электронная коммерция</option>
+                            <option value="EdTech">Образование</option>
+                            <option value="Energy">Энергетика</option>
+                            <option value="FinTech">Финансы</option>
+                            <option value="FoodTech">Кулинария</option>
+                            <option value="Gaming">Игровая индустрия</option>
+                            <option value="GreenTech">Зелёный сектор</option>
+                            <option value="Hardware">Оборудование</option>
+                            <option value="HrTech">Кадровый сектор</option>
+                            <option value="IndustrialTech">Индустриальные технологии</option>
+                            <option value="Legal & RegTech">Юриспруденция</option>
+                            <option value="Mapping & Navigation">Геодезия</option>
+                            <option value="Media & Entertainment">Медиа и развлечения</option>
+                            <option value="MedTech">Медицина</option>
+                            <option value="Real Estate">Недвижимость</option>
+                            <option value="RetailTech">Торговля</option>
+                            <option value="SafetyTech">Безопасность</option>
+                            <option value="SportTech">Спорт</option>
+                            <option value="Telecom & Communication">Телекоммуникации</option>
+                            <option value="Transport & Logistics">Логистика</option>
+                            <option value="Travel">Туризм</option>
+                            <option value="Web3">Вэб-технологии</option>
+                            <option value="WorkTech">Работа</option>
+                        </datalist>
+                    </div>
                 </fieldset>
 
                 <fieldset class="slide" id="slide-1">
-                    <h1>Слайд 1 - Название</h1>
+                    <h1>Слайд 1 - Проект</h1>
 
                     <div>
-                        <label for="project_name-2">Название</label>
-                        <input type="text" id="project_name-2" placeholder="Название" v-model="project_name" />
+                        <label for="project_name-2">Название проекта</label>
+                        <input type="text" id="project_name-2" placeholder="Название проекта" v-model="project_name" />
                     </div>
 
                     <div>
@@ -109,10 +201,87 @@
                         <label for="description">Описание</label>
                         <textarea name="description" placeholder="Подробное описание" v-model="description"></textarea>
                     </div>
+
+                    <menu>
+                        <button
+                            type="button"
+                            class="click-button button-AI"
+                            @click="generate_for_description()"
+                        >
+                            <p>Вариант от ИИ</p>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M385-120q-51 0-86.5-38T258-244q-59-5-98.5-49.5T120-402q0-22 5.5-42.5T142-484q-11-18-16.5-38t-5.5-43q0-60 41.5-103t98.5-50q2-51 38.5-86.5T386-840q29 0 51.5 10.5T480-799q20-20 42-30.5t51-10.5q50 0 86 35.5t39 86.5q58 5 100 48.5T840-565q0 23-6 43.5T817-483q11 20 17 42t6 43q0 64-39.5 106.5T702-244q-5 48-41 86t-86 38q-30 0-52-10t-43-30q-21 20-43 30t-52 10Zm125-600v480q0 25 19.5 42.5T576-180q26 0 45-23t21-47q-23-8-43-21.5T565-305q-8-11-6-22.5t13-19.5q11-8 22.5-6t19.5 13q13 18 32 27.5t42 9.5q38 0 65-26t27-69q0-9-2-18.5t-4-19.5q-18 13-39.5 19.5T690-410q-13 0-21.5-8.5T660-440q0-13 8.5-21.5T690-470q38 0 64-28t26-67q0-38-28-65t-64-29q-10 24-28.5 42.5T617-589q-12 5-23-.5T579-607q-4-12 1-23.5t17-15.5q18-6 29.5-24t11.5-41q0-29-19-49t-45-20q-26 0-45 17.5T510-720Zm-60 480v-480q0-25-18.5-42.5T386-780q-26 0-45.5 20T321-711q0 23 11 40.5t29 23.5q12 4 17.5 15.5T380-609q-5 12-16.5 18t-23.5 1q-24-8-42-26.5T270-659q-35 3-62.5 29.5T180-565q0 39 26 67t64 28q13 0 21.5 8.5T300-440q0 13-8.5 21.5T270-410q-23 0-44.5-7T186-436q-3 8-4.5 17t-1.5 18q0 43 26.5 70.5T271-303q22 0 41.5-10t32.5-27q8-10 20-12.5t22 5.5q10 8 12.5 20t-5.5 22q-14 20-33.5 33.5T318-250q2 24 21 47t46 23q27 0 46-17.5t19-42.5Zm30-240Z"/></svg>
+                        </button>
+                    </menu>
                 </fieldset>
 
                 <fieldset class="slide" id="slide-4">
-                    <h1>Слайд 4 - Клиенты</h1>
+                    <h1>Слайд 4 - Бизнес-модели</h1>
+
+                    <div v-for="i in business_units.length">
+                        <div class="input-with-controls">
+                            <input type="text" placeholder="Бизнес-модель" title="Бизнес-модель" v-model="business_units[i-1].name" />
+                            <button type="button" class="controls-red-button" @click="remove_business(i-1)">
+                                <p>Удалить бизнесь модель</p>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div class="input-number-with-controls with-margin">
+                            <input type="number" placeholder="Доходы" title="Доходы бизнес-модели" v-model="business_units[i-1].income"/>
+                            <input type="text" list="amount_list" class="small-input" placeholder="ед." v-model="business_units[i-1].income_suffix"/>
+                            <div>
+                                <button type="button" class="controls-red-button" @click="business_units[i-1].income -= 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M200-450v-60h560v60H200Z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="controls-green-button" @click="business_units[i-1].income = Number(business_units[i-1].income) + 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M450-450H200v-60h250v-250h60v250h250v60H510v250h-60v-250Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-range with-margin">
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="1"
+                                v-model="business_units[i-1].revenue_share"
+                                @input="check_shares(i-1)"
+                            />
+                            <input
+                                type="number"
+                                min="0" max="100" step="1"
+                                v-model="business_units[i-1].revenue_share"
+                                @input="check_shares(i-1)"
+                            />
+                        </div>
+
+                        <hr />
+                    </div>
+
+                    <menu>
+                        <button type="button" class="click-button button-gradient" @click="add_business()">добавить бизнес-модель</button>
+                    </menu>
+                </fieldset>
+
+                <fieldset class="slide" id="slide-5">
+                    <h1>Слайд 5 - Клиенты</h1>
 
                     <div v-for="i in clients.length">
                         <div class="input-with-controls">
@@ -131,8 +300,8 @@
                     </menu>
                 </fieldset>
 
-                <fieldset class="slide" id="slide-5">
-                    <h1>Слайд 5 - Прибыль</h1>
+                <fieldset class="slide" id="slide-6">
+                    <h1>Слайд 6 - Прибыль</h1>
 
                     <div>
                         <label for="revenue">Прибыль</label>
@@ -223,13 +392,104 @@
                     </div>
 
                     <div>
-                        <label for="inn">ИНН</label>
-                        <input type="text" id="inn" placeholder="ИНН" v-model="inn" :disabled="is_exist ? null : 'disabled'" />
+                        <label for="inn">ОГРН</label>
+                        <input type="text" id="inn" placeholder="ОГРН" @change="request_ogrn($event.target.value)" v-model="inn" :disabled="is_exist ? null : 'disabled'" />
+                        <div id="org_data">
+
+                        </div>
                     </div>
                 </fieldset>
 
-                <fieldset class="slide" id="slide-6">
-                    <h1>Слайд 6 - Команда</h1>
+                <fieldset class="slide" id="slide-7">
+                    <h1>Слайд 7 - Трекшн</h1>
+
+                    <div v-for="i in tracktion.length">
+                        <label>Год и заголовок</label>
+                        <div class="input-with-controls">
+                            <input
+                                type="number"
+                                class="small-input"
+                                placeholder="год"
+                                title="год"
+                                min="0"
+                                step="1"
+                                v-model="tracktion[i-1].year"
+                                @input="tracktion[i-1].year = Math.max(0, $event.target.value)"
+                            />
+                            <input type="text" placeholder="Название" title="Название" v-model="tracktion[i-1].caption" />
+                            <button type="button" class="controls-red-button" @click="remove_tracktion(i-1)">
+                                <p>Удалить трекшн</p>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <label>Прибыль и капитализация</label>
+                        <div class="input-number-with-controls with-margin">
+                            <input type="number" placeholder="Прибыль в этом году" title="Прибыль в этом году" v-model="tracktion[i-1].revenue"/>
+                            <input type="text" id="revenue_suffix" list="amount_list" class="small-input" placeholder="ед." v-model="revenue_suffix"/>
+                            <div>
+                                <button type="button" class="controls-red-button" @click="tracktion[i-1].revenue -= 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M200-450v-60h560v60H200Z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="controls-green-button" @click="tracktion[i-1].revenue = Number(tracktion[i-1].revenue) + 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M450-450H200v-60h250v-250h60v250h250v60H510v250h-60v-250Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <input
+                                type="number"
+                                class="small-input"
+                                placeholder="Капитализация"
+                                title="Капитализация"
+                                min="0" max="100" step="1"
+                                v-model="tracktion[i-1].capitalization"
+                                @input="tracktion[i-1].capitalization = Math.max(0, Math.min(100, $event.target.value))"
+                            />
+                            %
+                        </div>
+
+                        <!--label>Капитализация</label>
+                        <div class="input-range">
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="1"
+                                v-model="tracktion[i-1].capitalization"
+                            />
+                            <input
+                                type="number"
+                                min="0" max="100" step="1"
+                                v-model="tracktion[i-1].capitalization"
+                                @input="tracktion[i-1].capitalization = Math.max(0, Math.min(100, $event.target.value))"
+                            />
+                        </div-->
+
+                        <hr />
+                    </div>
+
+                    <menu>
+                        <button type="button" class="click-button button-gradient" @click="add_tracktion()">добавить трекшн</button>
+                    </menu>
+                </fieldset>
+
+                <fieldset class="slide" id="slide-8">
+                    <h1>Слайд 8 - Команда</h1>
 
                     <div v-for="i in members.length">
                         <div class="input-with-controls">
@@ -262,36 +522,39 @@
                     </menu>
                 </fieldset>
 
-                <fieldset class="slide" id="slide-7">
-                    <h1>Слайд 7 - Спонсоры</h1>
+                <fieldset class="slide" id="slide-9">
+                    <h1>Слайд 9 - Спонсоры</h1>
 
-                    <div v-for="i in investors.length">
-                        <div class="input-with-controls">
-                            <input type="text" placeholder="Спонсор" v-model="investors[i-1].name" />
-                            <button type="button" class="controls-red-button" @click="remove_investor(i-1, 'members')">
-                                <p>Удалить спонсора</p>
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
-                                </div>
-                            </button>
-                        </div>
-
-                        <div class="with-margin">
-                            <div class="file-input">
-                                <input type="file" accept="image/*" multiple="false" :data-investor="i-1" @change="process_image($event, 'investors')" />
-                                <div v-if="investors[i-1].image == null">загрузить фото</div>
-                                <div v-else class="file-input-loaded">загружено&nbsp;<span disabled>({{ investors[i-1].image.length }} байт)</span></div>
+                    <div>
+                        <label>Спонсоры</label>
+                        <div v-for="i in investors.length">
+                            <div class="input-with-controls">
+                                <input type="text" placeholder="Спонсор" v-model="investors[i-1].name" />
+                                <button type="button" class="controls-red-button" @click="remove_investor(i-1, 'members')">
+                                    <p>Удалить спонсора</p>
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                                    </div>
+                                </button>
                             </div>
-                        </div>
 
-                        <hr />
+                            <div class="with-margin">
+                                <div class="file-input">
+                                    <input type="file" accept="image/*" multiple="false" :data-investor="i-1" @change="process_image($event, 'investors')" />
+                                    <div v-if="investors[i-1].image == null">загрузить фото</div>
+                                    <div v-else class="file-input-loaded">загружено&nbsp;<span disabled>({{ investors[i-1].image.length }} байт)</span></div>
+                                </div>
+                            </div>
+
+                            <hr />
+                        </div>
                     </div>
 
                     <menu>
                         <button type="button" class="click-button button-gradient" @click="add_investor()">добавить спонсора</button>
                     </menu>
 
-                    <hr />
+                    <hr class="large-hr" />
 
                     <div v-for="i in investing_rounds.length">
                         <div>
@@ -307,7 +570,7 @@
                                 <select v-model="investing_rounds[i-1].amount_modifier" required class="small-input">
                                     <option value="1">руб.</option>
                                     <option value="1000">тыс. руб.</option>
-                                    <option value="1000000">млн. руб.</option>
+                                    <option value="1000000">млн руб.</option>
                                 </select>
 
                                 <div>
@@ -348,14 +611,141 @@
                         </div>
 
                         <div>
-                            <!--div v-for="i in "></div-->
+                            <br />
+                            <label>Распределение инвестиций в процентах</label>
+                            <div v-for="i2 in investing_rounds[i-1].spending.length" class="with-margin">
+                                <div class="input-with-controls">
+                                    <input type="text" placeholder="Название" v-model="investing_rounds[i-1].spending[i2-1].name" />
+                                    <button type="button" class="controls-red-button" @click="remove_spending(i-1, i2-1)">
+                                        <p>Удалить расход</p>
+                                        <div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                                        </div>
+                                    </button>
+                                </div>
+                                <div class="input-range with-margin">
+                                    <input
+                                        type="range"
+                                        id="churn_rate"
+                                        min="0"
+                                        max="100"
+                                        step="1"
+                                        v-model="investing_rounds[i-1].spending[i2-1].percent"
+                                        @input="check_spendings(i-1, i2-1)"
+                                    />
+                                    <input
+                                        type="number"
+                                        min="0" max="100" step="1"
+                                        v-model="investing_rounds[i-1].spending[i2-1].percent"
+                                        @input="check_spendings(i-1, i2-1)"
+                                    />
+                                </div>
+                            </div>
+
+                            <button type="button" class="click-button button-gradient" @click="add_spending(i-1)">добавить расход</button>
+                        </div>
+
+                        <!--hr /-->
+                    </div>
+
+                    <!--menu>
+                        <button type="button" class="click-button button-gradient" @click="add_investing_round()">добавить источник инвестиций</button>
+                    </menu-->
+                </fieldset>
+
+                <fieldset class="slide" id="slide-10">
+                    <h1>Слайд 10 - Дорожная карта проекта</h1>
+
+                    <div v-for="i in roadmap.length">
+                        <div class="input-with-controls">
+                            <input type="text" name="roadmap" placeholder="Событие" v-model="roadmap[i-1].name" />
+                            <button type="button" class="controls-red-button" @click="remove_roadmap(i-1)">
+                                <p>Удалить событие</p>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div class="with-margin">
+                            <div class="date-wrapper">
+                                <input type="date" placeholder="Дата начала" v-model="roadmap[i-1].start_date" />
+                                -
+                                <input type="date" placeholder="Дата конца" v-model="roadmap[i-1].end_date" />
+                            </div>
                         </div>
 
                         <hr />
                     </div>
 
                     <menu>
-                        <button type="button" class="click-button button-gradient" @click="add_investor()">добавить спонсора</button>
+                        <button type="button" class="click-button button-gradient" @click="add_roadmap()">добавить событие</button>
+                    </menu>
+                </fieldset>
+
+                <fieldset class="slide" id="slide-11">
+                    <h1>Слайд 11 - Контакты</h1>
+
+                    <div v-for="i in contacts.length">
+                        <div>
+                            <div class="input-with-controls">
+                                <select v-model="contacts[i-1].type" required>
+                                    <option value="" selected="selected">Тип</option>
+                                    <option value="phone">Телефон</option>
+                                    <option value="email">Email</option>
+                                    <option value="site">Сайт</option>
+                                    <option value="ok">Одноклассники</option>
+                                    <option value="vk">Вконтакте</option>
+                                    <option value="telegram">Телеграм</option>
+                                    <option value="whatsapp">Whatsapp</option>
+                                    <option value="viber">Viber</option>
+                                    <!--option value="facebook">Facebook</option>
+                                    <option value="instagram">Instagram</option-->
+                                    <option value="other">Другое</option>
+                                </select>
+
+                                <button type="button" class="controls-red-button" @click="remove_contact(i-1)">
+                                    <p>Удалить контакт</p>
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="with-margin" v-if="contacts[i-1].type == 'phone'">
+                            <input type="tel" placeholder="+7 (___) ___-__-__" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <div class="with-margin" v-else-if="contacts[i-1].type == 'email'">
+                            <input type="email" placeholder="mail@example.com" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <div class="with-margin" v-else-if="contacts[i-1].type == 'site'">
+                            <input type="url" placeholder="https://example.com" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <div class="with-margin" v-else-if="contacts[i-1].type == 'vk'">
+                            <input type="text" placeholder="https://vk.com/userid" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <div class="with-margin" v-else-if="contacts[i-1].type == 'ok'">
+                            <input type="text" placeholder="https://ok.ru/userid" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <div class="with-margin" v-else-if="contacts[i-1].type == 'telegram'">
+                            <input type="text" placeholder="https://t.me/userid" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <div class="with-margin" v-else>
+                            <input type="text" placeholder="Значение" v-model="contacts[i-1].value" />
+                        </div>
+
+                        <hr />
+                    </div>
+
+                    <menu>
+                        <button type="button" class="click-button button-gradient" @click="add_contact()">добавить контакт</button>
                     </menu>
                 </fieldset>
             </form>
@@ -381,6 +771,10 @@ export default {
     name: 'indexPage',
     data: function () {
         return {
+            ai_status: 'waiting',
+            ai_text: '',
+            ai_for: '',
+
             project_name: '',
             short_description: '',
 
@@ -394,7 +788,26 @@ export default {
 
             description: '',
 
+            business_units: [
+                {
+                    name: '',
+                    income: 0,
+                    income_suffix: '',
+                    revenue_share: 0,
+                }
+            ],
+
             clients: [''],
+
+            tracktion: [
+                {
+                    year: 0,
+                    caption: '',
+                    revenue: 0,
+                    revenue_suffix: '',
+                    capitalization: 0
+                }
+            ],
 
             revenue: 0,
             revenue_suffix: '',
@@ -425,14 +838,172 @@ export default {
                     spending: [
                         {
                             name: "",
-                            percent: ""
+                            percent: 0
                         }
                     ]
                 }
-            ]
+            ],
+
+            roadmap: [
+                {
+                    name: '',
+                    start_date: '',
+                    end_date: ''
+                }
+            ],
+
+            contacts: [
+                {
+                    type: '',
+                    value: ''
+                }
+            ],
+
+            sphere: ''
         };
     },
     methods: {
+        any_of: function (iterable) {
+            for (let i = 0; i < iterable.length; i++) {
+                if (iterable[i]) return true
+            }
+            return false
+        },
+
+        add_to_request: function (key) {
+            const keys = {
+                'project_name': 'Project name',
+                'description': 'Description',
+                'short_description': 'Short description',
+                'sphere': 'Sphere of activity',
+            }
+
+            if (this[key]) {
+                return (keys[key] ?? 'Данные') + ': ' + this[key].toString() + ';\n'
+            }
+
+            return ''
+        },
+
+        finish_request: function (prompt) {
+            return '-----------------------\n\n' + prompt + '\nPlease, write it in Russian, not English. Ignore english in your answer if possible."'
+        },
+
+        async translate (result) {
+            if (result.length < 500) {
+                const response = await fetch('https://api.mymemory.translated.net/get?langpair=en|ru&q=' + result)
+                return (await response.json()).responseData?.translatedText ?? ''
+            }
+
+            else {
+                let words = result.split(' ')
+                let translated = ''
+                let to_translate = ''
+
+                for (let i = 0; i < words.length; i++) {
+                    to_translate += words[i] + ' '
+                    if (to_translate.length > 450) {
+                        const response = await fetch('https://api.mymemory.translated.net/get?langpair=en|ru&q=' + to_translate.toString())
+                        translated += (await response.json()).responseData?.translatedText ?? ''
+                        to_translate = ''
+                    }
+                }
+
+                return translated
+            }
+
+            return result
+        },
+
+        async try_unarmour_result (result) {
+            if (result.startsWith('Sure') && result.indexOf(':') !== -1) {
+                result = result.replace(/sure[^:]:/i, '')
+            }
+
+            else if (result.startsWith('Sorry') && result.indexOf(':') !== -1) {
+                result = result.replace(/sorry[^:]:/i, '')
+            }
+
+            else if (result.startsWith('No') && result.indexOf(':') !== -1) {
+                result = result.replace(/no[^:]:/i, '')
+            }
+
+            // result = result.replaceAll(/["'a-z\-]+\s*/gi, '')
+
+            return result
+        },
+
+        show_ai_screen () {
+            this.ai_status = 'waiting'
+            let dialog = document.getElementById('ai-panel')
+            if (dialog) {
+                dialog.hidden = false
+                dialog.showModal()
+            }
+        },
+
+        close_ai (operation = 'close') {
+            let dialog = document.getElementById('ai-panel')
+            if (dialog) {
+                dialog.hidden = true
+                dialog.close()
+            }
+            this.ai_status = 'waiting'
+
+            if (operation == 'submit') {
+                this[this.ai_for] = this.ai_text
+            }
+
+            this.ai_text = ''
+            this.ai_for = ''
+        },
+
+        generate_for_description: async function () {
+            this.ai_for = 'description'
+            this.show_ai_screen()
+
+            if (!this.any_of(
+                this.project_name,
+                this.short_description,
+                this.sphere,
+            )) {
+                this.ai_status = 'missing'
+                return
+            }
+
+            this.ai_status = 'loading'
+
+            try {
+                let request = '"'
+
+                request += this.add_to_request('project_name')
+                request += this.add_to_request('short_description')
+                request += this.add_to_request('sphere')
+
+                request += this.finish_request('Write me a detailed description based on my data above.')
+
+                console.log(request)
+
+                const response = await fetch(
+                    'http://127.0.0.1:8000/hugchat/',
+                    {
+                        method: 'POST',
+                        body: request
+                    }
+                )
+
+                let text = await response.text()
+                text = await this.try_unarmour_result(text)
+                // text = await this.translate(text)
+
+                this.ai_text = text
+                this.ai_status = 'done'
+            }
+            catch (e) {
+                this.ai_status = 'error'
+            }
+        },
+
         scroll_to: function (id) {
             try {
                 document.getElementById(id).scrollIntoView({
@@ -443,6 +1014,7 @@ export default {
             }
             catch { }
         },
+
         process_image: function (event, type) {
             const input = event.target;
 
@@ -470,6 +1042,170 @@ export default {
             }
         },
 
+        custom_check_promblems () {
+            if (this.problem.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.problem.length; i++) {
+                if (!any_is_true) {
+                    if (this.problem[i].target_audience != '' ||
+                        this.problem[i].issue != '' ||
+                        this.problem[i].solution != '') {
+                            any_is_true = true
+                    }
+                }
+
+                if (this.problem[i].target_audience == '' ||
+                    this.problem[i].issue == '' ||
+                    this.problem[i].solution == '') {
+                        return [any_is_true, false]
+                }
+            }
+            return [true]
+        },
+
+        custom_check_members () {
+            if (this.members.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.members.length; i++) {
+                if (!any_is_true) {
+                    if (this.members[i].full_name != '' ||
+                        this.members[i].proffesion != '' ||
+                        this.members[i].photo != null) {
+                            any_is_true = true
+                    }
+                }
+
+                if (this.members[i].full_name == '' ||
+                    this.members[i].proffesion == '' ||
+                    this.members[i].photo == null) {
+                        return [any_is_true, false]
+                }
+            }
+
+            return [true]
+        },
+
+        custom_check_investors () {
+            if (this.investors.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.investors.length; i++) {
+                if (!any_is_true) {
+                    if (this.investors[i].name != '' ||
+                        this.investors[i].image != null) {
+                            any_is_true = true
+                        }
+                }
+
+                if (this.investors[i].name == '' ||
+                    this.investors[i].image == null) {
+                        return [any_is_true, false]
+                    }
+            }
+
+            return [true]
+        },
+
+        custom_check_invests () {
+            if (this.investing_rounds.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.investing_rounds.length; i++) {
+                if (!any_is_true) {
+                    if (this.investing_rounds[i].amount != 0 ||
+                        this.investing_rounds[i].stage != '') {
+                            any_is_true = true
+                        }
+                }
+
+                if (this.investing_rounds[i].amount == 0 ||
+                    this.investing_rounds[i].stage == '') {
+                        return [any_is_true, false]
+                    }
+            }
+
+            return [true]
+        },
+
+        custom_check_spendings () {
+            if (this.investing_rounds.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.investing_rounds.length; i++) {
+                if (!any_is_true) {
+                    for (let i2 = 0; i2 < this.investing_rounds[i].spending.length; i2++) {
+                        if (this.investing_rounds[i].spending[i2].name != '' ||
+                            this.investing_rounds[i].spending[i2].percent != 0) {
+                                any_is_true = true
+                                break
+                            }
+                    }
+                }
+
+                for (let i2 = 0; i2 < this.investing_rounds[i].spending.length; i2++) {
+                        if (this.investing_rounds[i].spending[i2].name == '' ||
+                            this.investing_rounds[i].spending[i2].percent == 0) {
+                            return [any_is_true, false]
+                            }
+                    }
+            }
+
+            return [true]
+        },
+
+        custom_check_roadmap () {
+            if (this.roadmap.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.roadmap.length; i++) {
+                if (!any_is_true) {
+                    if (this.roadmap[i].name != '' ||
+                        this.roadmap[i].start_date != '' ||
+                        this.roadmap[i].end_date != '') {
+                            any_is_true = true
+                        }
+                }
+
+                if (this.roadmap[i].name == '' ||
+                    this.roadmap[i].start_date == '' ||
+                    this.roadmap[i].end_date == '') {
+                        return [any_is_true, false]
+                    }
+            }
+
+            return [true]
+        },
+
+        custom_check_contacts () {
+            if (this.contacts.length == 0) return [false]
+
+            let any_is_true = false
+
+            for (let i = 0; i < this.contacts.length; i++) {
+                if (!any_is_true) {
+                    if (this.contacts[i].type != '' ||
+                        this.contacts[i].value != '') {
+                            any_is_true = true
+                        }
+                }
+
+                if (this.contacts[i].type == '' ||
+                    this.contacts[i].value == '') {
+                        return [any_is_true, false]
+                    }
+            }
+
+            return [true]
+        },
+
         remove_audience: function (i) {
             this.problem.splice(i, 1);
         },
@@ -490,11 +1226,36 @@ export default {
             this.problem[audience_id].solution.push('');
         },
 
+        remove_business: function (i) {
+            this.business_units.splice(i, 1);
+        },
+        add_business: function () {
+            this.business_units.push({
+                name: '',
+                income: 0,
+                income_suffix: '',
+                revenue_share: 0
+            });
+        },
+
         remove_client: function (i) {
             this.clients.splice(i, 1);
         },
         add_client: function () {
             this.clients.push('');
+        },
+
+        remove_tracktion: function (i) {
+            this.tracktion.splice(i, 1);
+        },
+        add_tracktion: function () {
+            this.tracktion.push({
+                year: 0,
+                caption: '',
+                revenue: 0,
+                revenue_suffix: '',
+                capitalization: 0
+            });
         },
 
         remove_member: function (i) {
@@ -518,15 +1279,114 @@ export default {
             });
         },
 
+        remove_spending: function (i, i2) {
+            this.investing_rounds[i].spending.splice(i2, 1);
+        },
+        add_spending: function (i) {
+            this.investing_rounds[i].spending.push({
+                name: "",
+                percent: 0
+            });
+        },
+
+        remove_roadmap: function (i) {
+            this.roadmap.splice(i, 1);
+        },
+        add_roadmap: function () {
+            this.roadmap.push({
+                name: '',
+                start_date: '',
+                end_date: ''
+            });
+        },
+
+        remove_contact: function (i) {
+            this.contacts.splice(i, 1);
+        },
+        add_contact: function () {
+            this.contacts.push({
+                type: "",
+                value: ""
+            });
+        },
+
+        check_shares: function (i) {
+            let sum = 0
+
+            for (let i2 = 0; i2 < this.business_units.length; i2++) {
+                if (i2 == i) continue
+                sum += this.business_units[i2].revenue_share
+            }
+
+            this.business_units[i].revenue_share = (
+                Math.max(0, Math.min(100 - sum, this.business_units[i].revenue_share))
+            )
+        },
+
+        /**
+         * Check all the spendings are no more than 100 in sum.
+         */
+        check_spendings: function (i, i2) {
+            let sum = 0
+            for (let i3 = 0; i3 < this.investing_rounds[i].spending.length; i3++) {
+                if (i3 == i2) continue
+                sum += this.investing_rounds[i].spending[i3].percent
+            }
+
+            this.investing_rounds[i].spending[i2].percent = (
+                Math.max(0, Math.min(100 - sum, this.investing_rounds[i].spending[i2].percent))
+            )
+        },
+
+        remove_investing_round: function (i) {
+            this.investing_rounds.splice(i, 1);
+        },
+
+        add_investing_round: function () {
+            this.investing_rounds.push({
+                amount: 0,
+                amount_modifier: "1",
+                stage: "",
+                spending: [
+                    {
+                        name: "",
+                        percent: 0
+                    }
+                ]
+            });
+        },
+
+        request_ogrn: function (ogrn) {
+            fetch("http://127.0.0.1:8000/info/?ogrn=" + ogrn.toString())
+                .then(response => response.json())
+                .then(data => {
+                    const div = document.getElementById('org_data')
+
+                    if (div) {
+                        for (let key in data['contacts']) {
+                            let h2 = document.createElement('h2')
+                            let p = document.createElement('p')
+                            h2.innerHTML = key
+                            p.innerHTML = data['contacts'][key] ? data['contacts'][key] : '—'
+                            div.appendChild(h2)
+                            div.appendChild(p)
+                            div.appendChild(document.createElement('br'))
+                        }
+                    }
+                })
+        },
+
         send: function (event) {
             event.preventDefault();
 
-            const body = JSON.stringify({
+            const body = {
                 project_name: this.project_name,
                 short_description: this.short_description,
                 problem: this.problem,
                 description: this.description,
+                business_units: this.business_units,
                 clients: this.clients,
+                tracktion: this.tracktion,
                 revenue: this.revenue.toString() + ' ' + this.revenue_suffix ?? '',
                 clients_count: this.clients_count.toString(),
                 churn_rate: this.churn_rate.toString(),
@@ -535,89 +1395,44 @@ export default {
                 members: this.members,
                 investors: this.investors,
                 investing_rounds: this.investing_rounds,
+                roadmap: this.roadmap,
+                contacts: this.contacts,
+                sphere: this.sphere
+            }
 
-                "roadmap": [
-                    {
-                    "name": "string",
-                    "start_date": "2023-08-26",
-                    "end_date": "2023-08-26"
-                    }
-                ],
-                "contacts": [
-                    {
-                    "type": "phone",
-                    "value": "string"
-                    }
-                ],
-                "sphere": "string"
-            })
+            // investing_rounds spendings from str to ints
 
-            console.log({
-                project_name: this.project_name,
-                short_description: this.short_description,
-                problem: this.problem,
-                description: this.description,
-                clients: this.clients,
-                revenue: this.revenue.toString() + ' ' + this.revenue_suffix ?? '',
-                clients_count: this.clients_count.toString(),
-                churn_rate: this.churn_rate.toString(),
-                inn: this.inn,
-                is_exist: this.is_exist,
-                members: this.members,
-                investors: this.investors,
-                investing_rounds: this.investing_rounds,
+            for (let i = 0; i < body.investing_rounds.length; i++) {
+                for (let i2 = 0; i2 < body.investing_rounds[i].spending.length; i2++) {
+                    body.investing_rounds[i].spending[i2].percent = body.investing_rounds[i].spending[i2].percent.toString()
+                }
+            }
 
-                "roadmap": [
-                    {
-                    "name": "string",
-                    "start_date": "2023-08-26",
-                    "end_date": "2023-08-26"
-                    }
-                ],
-                "contacts": [
-                    {
-                    "type": "phone",
-                    "value": "string"
-                    }
-                ],
-                "sphere": "string"
-            })
+            // console.log(body)
 
             var requestOptions = {
                 method: 'POST',
-                body: body,
+                body: JSON.stringify(body),
                 headers: {'content-type': 'application/json'},
                 redirect: 'follow'
             };
 
             fetch("http://127.0.0.1:8000/presentation/", requestOptions)
             .then(response => response.blob())
-  .then(blob => {
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = 'your-filename.pptx'; // Change the filename as needed
+            .then(blob => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = 'presentation.pptx';
 
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  })
-  .catch(error => {
-    console.error('Error fetching or downloading the PPTX file:', error);
-  })
-                // .then(response => response.blob())
-                // .then( blob => {
-                //     var file = window.URL.createObjectURL(blob)
-                //     window.location.assign(file)
-                // })
-                // .then(result => console.log(result))
-                // .catch(error => console.log('error', error));
-
-            // this.$axios.post('http://localhost:8000/presentation/', body).then(
-            //     response => {
-            //         console.log(response)
-            //     }
-            // )
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            })
+            .catch(error => {
+                console.error('Error fetching or downloading the PPTX file:', error);
+            })
         },
+
         reset: function () {
             this.project_name = '';
             this.short_description = '';
@@ -629,12 +1444,72 @@ export default {
                 }
             ];
             this.description = '';
+            this.business_units = [
+                {
+                    name: '',
+                    income: 0,
+                    income_suffix: '',
+                    revenue_share: 0,
+                }
+            ];
             this.clients = [''];
+            this.tracktion = [
+                {
+                    year: 0,
+                    caption: '',
+                    revenue: 0,
+                    revenue_suffix: '',
+                    capitalization: 0,
+                }
+            ];
             this.revenue = 0;
             this.revenue_suffix = '';
             this.clients_count = 0;
             this.churn_rate = 0;
             this.inn = "";
+            this.is_exist = false;
+            this.members = [
+                {
+                    full_name: "",
+                    proffesion: "",
+                    photo: null
+                }
+            ]
+            this.investors = [
+                {
+                    name: "",
+                    image: null
+                }
+            ]
+            this.investing_rounds = [
+                {
+                    amount: 0,
+                    amount_modifier: "1",
+                    stage: "",
+                    spending: [
+                        {
+                            name: "",
+                            percent: 0
+                        }
+                    ]
+                }
+            ]
+            this.roadmap = [
+                {
+                    name: "",
+                    start_date: '',
+                    end_date: ''
+                }
+            ]
+            this.contacts = [
+                {
+                    type: "",
+                    value: ""
+                }
+            ]
+            this.sphere = ""
+
+            try { document.getElementById('org_data').innerHTML = "" } catch {}
         }
     },
     components: { NavButton }
@@ -723,8 +1598,50 @@ html {
     filter: brightness(80%);
 }
 
+.button-AI {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 6px 14px;
+    background: linear-gradient(to bottom right, #00885b, #1e698b);
+    background-size: 200% 200%;
+    color: #FFFFFF;
+    animation: button-hover-exit-anim ease-out;
+    animation-duration: .5s;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+    transition: .5s;
+}
+.button-AI > p {
+    font-size: 120%;
+    font-style: italic;
+    background: transparent;
+    color: #FFFFFF;
+}
+.button-AI > svg {
+    position: relative;
+    top: -1px;
+    right: -1px;
+    background: transparent;
+    fill: #FFFFFF;
+}
+.button-AI:hover {
+    animation: button-hover-anim ease-out;
+    animation-duration: .5s;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+}
+.button-AI:active {
+    filter: brightness(80%);
+}
+
 
 body {
+    padding-bottom: 20px;
     background-color: #f0f0f0;
 }
 
@@ -845,7 +1762,7 @@ body {
     font-style: italic;
 }
 
-.slide :is(input[type="text"], input[type="number"]) {
+.slide :is(input[type="text"], input[type="number"], input[type="tel"], input[type="email"], input[type="url"]) {
     display: block;
     box-sizing: border-box;
     width: 100%;
@@ -858,16 +1775,17 @@ body {
     font-weight: bold;
     transition: .25s;
 }
-.slide :is(input[type="text"], input[type="number"]):hover {
+.slide :is(input[type="text"], input[type="number"], input[type="tel"], input[type="email"], input[type="url"]):hover {
     border: 1px solid var(--colour-decoration);
     background-color: var(--colour-decoration-light);
 }
-.slide :is(input[type="text"], input[type="number"]):not(:placeholder-shown) {
+.slide :is(input[type="text"], input[type="number"], input[type="tel"], input[type="email"], input[type="url"]):not(:placeholder-shown) {
     border: 1px solid var(--colour-decoration);
 }
 
 .slide input[type="number"] {
     flex-shrink: 1;
+    -moz-appearance: textfield;
     appearance: none;
 }
 .slide input[type="number"]::-webkit-outer-spin-button,
@@ -882,7 +1800,7 @@ body {
     flex-wrap: nowrap;
     gap: 10px;
 }
-.input-with-controls :is(input[type="text"], input[type="number"]) {
+.input-with-controls :is(input[type="text"], input[type="number"], select) {
     display: flex;
     flex-shrink: 1;
     flex-basis: 100%;
@@ -1239,6 +2157,22 @@ body {
 .small-input {
     width: 120px !important;
     min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+
+#org_data {
+    padding: 10px;
+}
+#org_data h2 {
+    color: #002d9e;
+    font-size: 110%;
+    font-weight: bold;
+    text-transform: lowercase;
+    cursor: default;
+}
+#org_data h2:first-letter {
+    text-transform: uppercase;
 }
 
 
@@ -1252,8 +2186,96 @@ body {
     background-color: var(--colour-decoration-alt);
 }
 
+.slide hr.large-hr {
+    width: 100%;
+    height: 8px;
+    border-radius: 0;
+}
+
 .slide menu {
     padding: 0 20px;
+}
+
+#ai-panel:not([open]) {
+    display: none !important;
+}
+
+#ai-panel {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin: auto;
+    width: 90%;
+    max-width: 900px;
+    height: 90%;
+    border: 3px solid var(--colour-decoration-alt);
+    border-radius: 20px;
+    background-color: var(--colour-back);
+    background-clip: border-box;
+}
+
+#loader {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+#ai-menu {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    border-top: 2px solid var(--colour-decoration-alt);
+}
+
+#ai-menu input[type='text'] {
+    width: 100%;
+    height: 40px;
+    padding: 6px 10px;
+    border: 1px dashed var(--colour-decoration-alt);
+    border-radius: 666px;
+    background-color: var(--colour-back);
+    color: #002d9e;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .25s;
+}
+#ai-menu input[type='text']:hover {
+    border: 1px solid var(--colour-decoration);
+    background-color: var(--colour-decoration-light);
+}
+
+#ai-menu form {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#ai-menu form button {
+    display: flex;
+    flex-grow: 1px;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: var(--colour-decoration);
+    color: var(--colour-back);
+    cursor: pointer;
+    transition: .25s;
+}
+#ai-menu form button:hover {
+    background-color: var(--colour-decoration-alt);
 }
 
 

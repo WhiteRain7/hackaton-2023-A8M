@@ -20,6 +20,7 @@ export default {
 
     methods: {
         any: function (iterable) {
+            if (iterable.length == 0) return false
             for (let i = 0; i < iterable.length; i++) {
                 if (iterable[i]) return true
             }
@@ -27,6 +28,7 @@ export default {
         },
 
         all: function (iterable) {
+            if (iterable.length == 0) return false
             for (let i = 0; i < iterable.length; i++) {
                 if (!iterable[i]) return false
             }
