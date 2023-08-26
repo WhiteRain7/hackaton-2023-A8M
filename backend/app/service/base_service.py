@@ -2,7 +2,7 @@ import collections  # noqa: F401
 import collections.abc  # noqa: F401
 from pathlib import Path
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Inches, Pt, Emu
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
 
 from ..schemas.base_schema import CreatePresentation, MarketType
@@ -38,15 +38,20 @@ class BaseSevice:
         if pres_temp > 5:
             pres_temp = 1
         print(pres_temp)
-        prs = Presentation(str(settings.templates_path / f'{pres_temp}.pptx'))
+        prs = Presentation(str(settings.templates_path / f'{6}.pptx'))
         return prs
+
+    def get_top_min(self, slide) -> int:
+        _title = slide.shapes.title
+        return _title.top + _title.height
+
 
     def generate_filename(self) -> Path:
         return settings.media_path / f"{time()}.pptx"
     
     def create_table(self, slide, _rows, _cols):
-        left_inch = Inches(1.0)
-        top_inch = Inches(2.0)
+        left_inch = Inches(2.65)
+        top_inch = self.get_top_min(slide) + Inches(0.5)
         width_inch = Inches(8.0)
         height_inch = Inches(3)
         table = slide.shapes.add_table(
@@ -55,22 +60,7 @@ class BaseSevice:
         ).table
 
         table.first_col = False
-        table.first_row = False
-
-        # Clear cell styles
-        for row in table.rows:
-            for cell in row.cells:
-                cell.text = ""
-                cell.fill.solid()
-                cell.fill.background()
-                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
-                for paragraph in cell.text_frame.paragraphs:
-                    paragraph.alignment = PP_ALIGN.CENTER # Don't work
-                    for run in paragraph.runs:
-                        run.font.size = Pt(18)
-                        run.font.bold = None
-                        run.font.italic = None
-                        run.font.color.rgb = RGBColor(0, 0, 0)
+        table.first_row = True
                         
         return table
     
@@ -86,11 +76,6 @@ class BaseSevice:
         slide = self.create_slide(prs, 0, data.project_name)
         _subtitle = slide.placeholders[1]
         _subtitle.text = data.short_description
-        # TODO need fix
-        _subtitle_text_frame = _subtitle.text_frame
-        _subtitle_text_frame.word_wrap = True
-        _subtitle_text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
-        _subtitle_text_frame.alignment = PP_ALIGN.JUSTIFY
 
     def generate_table_slide(self, prs: Presentation, data: CreatePresentation, title: str, content_func):
         slide = self.create_slide(prs, 5, title)
@@ -120,6 +105,9 @@ class BaseSevice:
         """Генерация третьего слайда - Описание"""
         slide = self.create_slide(prs, 1, "Описание")
         description = slide.placeholders[1]
+        # print(dir())
+        description.text_frame.clear() # не работает
+        # TODO: картинка нужна здесь
         description.text = data.description
 
     def generate_members_slide(self, prs: Presentation, data: CreatePresentation):
@@ -140,8 +128,8 @@ class BaseSevice:
     def generate_market_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 5 слайда - Рынок"""
         slide = self.create_slide(prs, 5, "Рынок")
-        left = Inches(0.25)
-        top = Inches(2)
+        left = Inches(1.8)
+        top = self.get_top_min(slide) + Inches(0.7)
         width = Inches(3)
         height = Inches(3)
         shapes = slide.shapes
@@ -150,17 +138,6 @@ class BaseSevice:
             shape = shapes.add_shape(
                 MSO_SHAPE.OVAL, left + left_offset, top, width, height
             )
-            
-            fill = shape.fill
-            if market_unit.type == MarketType.tam:
-                fill.solid()
-                fill.fore_color.rgb = RGBColor(0, 0, 120)
-            elif market_unit.type == MarketType.sam:
-                fill.solid()
-                fill.fore_color.rgb = RGBColor(0, 0, 160)
-            elif market_unit.type == MarketType.som:
-                fill.solid()
-                fill.fore_color.rgb = RGBColor(0, 0, 200)
             
             head = shape.text_frame.add_paragraph()
             head.text = market_unit.type.value
@@ -204,7 +181,7 @@ class BaseSevice:
     def generate_roadmap_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 13 слайда - Дорожная карта"""
         slide = self.create_slide(prs, 5, "Дорожная карта")
-        fig, ax = plt.subplots(figsize=(8, 4))
+        fig, ax = plt.subplots(figsize=(9, 4))
         steps = data.roadmap
         for i, step in enumerate(steps):
             ax.barh(i, (step.end_date - step.start_date).days, left=step.start_date, height=0.5, align='center')
@@ -219,10 +196,10 @@ class BaseSevice:
         plt.savefig(image_stream, format='png')
         plt.close()
 
-        left = Inches(1)
-        top = Inches(1.5)
-        width = Inches(8)
-        height = Inches(4.5)
+        left = Inches(1.9)
+        top = self.get_top_min(slide) + Inches(0.5)
+        width = Inches(9.5)
+        height = Inches(4)
         pic = slide.shapes.add_picture(image_stream, left, top, width, height)
     
     def generate_contacts_slide(self, prs: Presentation, data: CreatePresentation):
@@ -248,10 +225,10 @@ class BaseSevice:
     def generate_tracktion_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 8 слайда - Трекшен"""
         slide = self.create_slide(prs, 5, "Трекшен")
-        left = Inches(1)
-        top = Inches(1.5)
-        width = Inches(8)
-        height = Inches(5)
+        left = Inches(1.8)
+        top = self.get_top_min(slide) + Inches(0.5)
+        width = Inches(10)
+        height = Inches(4)
         shapes = slide.shapes
         tracktion = data.tracktion
         chart_data = CategoryChartData()
@@ -275,12 +252,6 @@ class BaseSevice:
         # TODO: цвета + шрифты
         file = self.generate_filename()
 
-        # debug
-        # for i,slide in enumerate(prs.slide_layouts):
-        #      print(i,slide.name)
-        #     for shape in slide.placeholders:
-        #         print(slide.name,";", shape.placeholder_format.idx, shape.name)
-
         self.generate_title_slide(prs, data)
         self.generate_problems_slide(prs, data)
         self.generate_description_slide(prs, data)
@@ -290,7 +261,7 @@ class BaseSevice:
         self.generate_tracktion_slide(prs, data)
         self.generate_finance_slide(prs, data)
         self.generate_members_slide(prs, data)
-        self.generate_investing_rounds_slide(prs, data)
+        self.generate_investing_rounds_slide(prs, data) # переделать в виде круговой диаграммы
         self.generate_roadmap_slide(prs, data)
         self.generate_contacts_slide(prs, data)
 
