@@ -16,12 +16,12 @@ class Problem(BaseModel):
 class Member(BaseModel):
     full_name: str = Field(description="ФИО, 10 слайд - Команда")
     proffesion: str = Field(description="Род деятельности, 10 слайд - Команда")
-    photo: str =  None
+    photo: str | None =  None
 
 
 class Investor(BaseModel):
     name: str = Field(description="Имя компании, 11 слайд - Инвесторы")
-    image: str = None
+    image: str | None = None
 
 
 class Stage(str, Enum):
