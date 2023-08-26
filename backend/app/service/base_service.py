@@ -161,18 +161,34 @@ class BaseSevice:
 
         stage = investing_rounds[0].stage
         amount = investing_rounds[0].amount
-        slide = self.create_slide(prs, 5, f"За {stage.value} будет привлечено {amount} рублей")
-        _title = slide.shapes.title
-        _title.text = f"За {stage.value} будет привлечено {amount} рублей"
+        slide = self.create_slide(prs, 5, "")
+        
+        title_text = f"За {stage.value} будет привлечено {amount} рублей"
         if investing_rounds[0].fraction:
-            _title.text += f" за долю в компании {investing_rounds[0].fraction}"
+            title_text += f" за долю в компании {investing_rounds[0].fraction}"
+        _title = slide.shapes.title
+        _title.text = title_text
+        
+        spending = investing_rounds[0].spending
+        labels = [item.name for item in spending]
+        sizes = [int(item.percent.strip('%')) for item in spending]
+        
+        fig1, ax1 = plt.subplots(figsize=(8, 4))
+        ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+        ax1.axis('equal')
 
-        _rows = len(investing_rounds[0].spending)
-        _cols = 2
-        table = self.create_table(slide, _rows, _cols)
-        for i in range(0, _rows):
-            table.cell(i, 0).text = investing_rounds[0].spending[i].name
-            table.cell(i, 1).text = investing_rounds[0].spending[i].percent
+        image_stream = BytesIO()
+        plt.savefig(image_stream, format='png')
+        plt.close(fig1)
+        
+        left = Inches(2.5)
+        top = Inches(2.5)
+        width = Inches(8)
+        height = Inches(4)
+        
+        pic = slide.shapes.add_picture(image_stream, left, top, width, height)
+        
+        image_stream.seek(0)
     
     def generate_roadmap_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 13 слайда - Дорожная карта"""
