@@ -36,52 +36,19 @@ class BaseSevice:
         _subtitle_text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
         _subtitle_text_frame.alignment = PP_ALIGN.JUSTIFY
 
-    def generate_problems_slide(
-        self, prs: Presentation, data: CreatePresentation
-    ) -> None:
-        """Генерация второго слайда - Проблемы"""
+    def generate_table_slide(self, prs: Presentation, data: CreatePresentation, title: str, content_func):
         title_and_content_layout = prs.slide_layouts[5]
         slide = prs.slides.add_slide(title_and_content_layout)
         _title = slide.shapes.title
-        _title.text = "Проблемы"
+        _title.text = title
 
         left_inch = Inches(1.0)
         top_inch = Inches(2.0)
         width_inch = Inches(8.0)
         height_inch = Inches(3)
 
-        _rows = (max(len(x.issue) for x in data.problem)) + 1
-        _cols = len(data.problem)
-        # print(_cols, _cols)
-
-        table = slide.shapes.add_table(
-            rows=_rows, cols=_cols,
-            left=left_inch, top=top_inch, width=width_inch, height=height_inch
-        ).table
-
-        for i in range(0, _cols):
-            cell = table.cell(0, i)
-            cell.text = data.problem[i].target_audience
-            for j in range(1, _rows):
-                cell = table.cell(j, i)
-                cell.text = data.problem[i].issue[j-1]
-
-
-    def generate_solution_slide(
-        self, prs: Presentation, data: CreatePresentation
-    ) -> None:
-        """Генерация четвёртого слайда - Решение"""
-        title_and_content_layout = prs.slide_layouts[5]
-        slide = prs.slides.add_slide(title_and_content_layout)
-        _title = slide.shapes.title
-        _title.text = "Решение"
-
-        left_inch = Inches(1.0)
-        top_inch = Inches(2.0)
-        width_inch = Inches(8.0)
-        height_inch = Inches(3)
-
-        _rows = (max(len(x.solution) for x in data.problem)) + 1
+        max_content_length = max(len(content_func(x)) for x in data.problem)
+        _rows = max_content_length + 1
         _cols = len(data.problem)
 
         table = slide.shapes.add_table(
@@ -92,9 +59,16 @@ class BaseSevice:
         for i in range(0, _cols):
             cell = table.cell(0, i)
             cell.text = data.problem[i].target_audience
-            for j in range(1, _rows):
-                cell = table.cell(j, i)
-                cell.text = data.problem[i].solution[j-1]
+            for j, content in enumerate(content_func(data.problem[i])):
+                cell = table.cell(j + 1, i)
+                cell.text = content
+
+    def generate_problems_slide(self, prs: Presentation, data: CreatePresentation):
+        self.generate_table_slide(prs, data, "Проблемы", lambda x: x.issue)
+
+    def generate_solution_slide(self, prs: Presentation, data: CreatePresentation):
+        self.generate_table_slide(prs, data, "Решение", lambda x: x.solution)
+
 
     def generate_description_slide(self, prs: Presentation, data: CreatePresentation) -> None:
         """Генерация третьего слайда - Описание"""
