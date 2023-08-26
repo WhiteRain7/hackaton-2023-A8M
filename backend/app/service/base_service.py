@@ -81,6 +81,45 @@ class BaseSevice:
         _title.text = "Описание"
         description.text = data.description
 
+    def generate_members_slide(self, prs: Presentation, data: CreatePresentation):
+        raise Exception("Not implemented")
+
+    def generate_investors_slide(self, prs: Presentation, data: CreatePresentation):
+        raise Exception("Not implemented")
+    
+    def generate_investing_rounds_slide(self, prs: Presentation, data: CreatePresentation):
+        raise Exception("Not implemented")
+    
+    def generate_roadmap_slide(self, prs: Presentation, data: CreatePresentation):
+        raise Exception("Not implemented")
+    
+    def generate_contacts_slide(self, prs: Presentation, data: CreatePresentation):
+        raise Exception("Not implemented")
+    
+    def generate_business_units_slide(self, prs: Presentation, data: CreatePresentation):
+        title_and_content_layout = prs.slide_layouts[5]
+        slide = prs.slides.add_slide(title_and_content_layout)
+        _title = slide.shapes.title
+        _title.text = "Бизнес-модель"
+
+        left_inch = Inches(1.0)
+        top_inch = Inches(2.0)
+        width_inch = Inches(8.0)
+        height_inch = Inches(3)
+
+        _rows = 3
+        _cols = len(data.business_units)
+
+        table = slide.shapes.add_table(
+            rows=_rows, cols=_cols,
+            left=left_inch, top=top_inch, width=width_inch, height=height_inch
+        ).table
+
+        for i in range(0, _cols):
+            table.cell(0, i).text = data.business_units[i].name
+            table.cell(1, i).text = data.business_units[i].income
+            table.cell(2, i).text = data.business_units[i].revenue_share
+
     async def create_presentation(self, data: CreatePresentation):
         prs = self.generate_template()
         # TODO: цвета + шрифты
@@ -96,6 +135,7 @@ class BaseSevice:
         self.generate_problems_slide(prs, data)
         self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
+        self.generate_business_units_slide(prs, data)
 
         prs.save(str(file))
         return FileResponse(
