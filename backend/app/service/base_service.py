@@ -30,6 +30,7 @@ from pptx.enum.chart import XL_LABEL_POSITION
 from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_SHAPE
 import random
 import httpx
+import qrcode
 
 import io
 import base64
@@ -109,8 +110,8 @@ class BaseSevice:
 
         prompt = self.generate_prompt(data.description)
         image_stream = await self.generate_image(f'description image high quality {prompt}')
-        left = Inches(7.3)
-        top = self.get_top_min(slide) + Inches(0.5)
+        left = slide.placeholders[2].left
+        top = slide.placeholders[2].top
         width = Inches(4.5)
         height = Inches(4.5)
         
@@ -230,14 +231,31 @@ class BaseSevice:
         top = self.get_top_min(slide) + Inches(0.5)
         width = Inches(9.5)
         height = Inches(4)
-        pic = slide.shapes.add_picture(image_stream, left, top, width, height)
+        slide.shapes.add_picture(image_stream, left, top, width, height)
     
     def generate_contacts_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 14 слайда - Контакты"""
-        slide = self.create_slide(prs, 1, "Контакты")
+
+        slide = self.create_slide(prs, 3, "Контакты")
         description = slide.placeholders[1]
         description.text = '\n'.join(item.value for item in data.contacts) + '\n'
-    
+
+        qr = qrcode.QRCode(version=6)
+        data_ = ''.join((f'{x.type.value}: {x.value} , ' for x in data.contacts))
+        qr.add_data(data_)
+        qr.make(fit=True)
+        qr_pil_image = qr.make_image(fill_color="black", back_color="white")
+        qr_image_bytes_io = io.BytesIO()
+        qr_pil_image.save(qr_image_bytes_io, format="PNG")
+        qr_image_bytes_io.seek(0)
+
+        left = slide.placeholders[2].left
+        top = slide.placeholders[2].top
+        width = Inches(4.5)
+        height = Inches(4.5)
+
+        slide.shapes.add_picture(qr_image_bytes_io, left, top, width, height)
+
     def generate_business_units_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 7 слайда - Бизнес-модель"""
         slide = self.create_slide(prs, 5, "Бизнес-модель")

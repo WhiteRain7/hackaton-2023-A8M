@@ -7,3 +7,5 @@ hugchat==0.2.0
 httpx==0.24.1
 lxml==4.9.3
 matplotlib==3.7.2
+qrcode==7.4.2
+pillow==10.0.0
