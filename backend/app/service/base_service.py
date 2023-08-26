@@ -334,8 +334,9 @@ class BaseSevice:
             try:
                 r = await client.post(f"{settings.stable_diffusion_url}sdapi/v1/txt2img", json={"prompt": prompt, "steps":30, "width": 512,"height": 512,})
             except:
-                # TODO достать изображение из датасета
-                pass
+                with open(settings.templates_path / "zaglushka.png", "rb") as file:
+                    buffer = io.BytesIO(file.read())
+                return buffer
             else:
                 r = r.json()
                 for i in r['images']:
