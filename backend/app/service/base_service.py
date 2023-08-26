@@ -227,8 +227,8 @@ class BaseSevice:
         self.generate_solution_slide(prs, data)
         self.generate_business_units_slide(prs, data)
         self.generate_tracktion_slide(prs, data)
-        self.generate_investing_rounds_slide(prs, data)
         self.generate_members_slide(prs, data)
+        self.generate_investing_rounds_slide(prs, data)
         self.generate_roadmap_slide(prs, data)
         self.generate_contacts_slide(prs, data)
 
