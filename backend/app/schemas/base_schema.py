@@ -43,6 +43,7 @@ class InvestingRound(BaseModel):
         description="Сколько всего будет привлечено денег в рамках раунда, 12 слайд - Инвестиционный раунд"
     )
     stage: Stage = Field(description="Имя раунда, 12 слайд - Инвестиционный раунд")
+    fraction: str = Field(description="Доля в компании, 12 слайд - Инвестиционный раунд")
     spending: list[Spending] = Field(
         description="На что тратят в процентах, 12 слайд - Инвестиционный раунд"
     )

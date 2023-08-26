@@ -20,6 +20,17 @@ class BaseSevice:
 
     def generate_filename(self) -> Path:
         return settings.media_path / "test.pptx"  # f"{time()}.pptx"
+    
+    def generate_table(self, slide, _rows, _cols):
+        left_inch = Inches(1.0)
+        top_inch = Inches(2.0)
+        width_inch = Inches(8.0)
+        height_inch = Inches(3)
+        table = slide.shapes.add_table(
+            rows=_rows, cols=_cols,
+            left=left_inch, top=top_inch, width=width_inch, height=height_inch
+        ).table
+        return table
 
     def generate_title_slide(self, prs: Presentation, data: CreatePresentation) -> None:
         """Генерация первого слайда - Титульник"""
@@ -42,19 +53,11 @@ class BaseSevice:
         _title = slide.shapes.title
         _title.text = title
 
-        left_inch = Inches(1.0)
-        top_inch = Inches(2.0)
-        width_inch = Inches(8.0)
-        height_inch = Inches(3)
-
         max_content_length = max(len(content_func(x)) for x in data.problem)
         _rows = max_content_length + 1
         _cols = len(data.problem)
 
-        table = slide.shapes.add_table(
-            rows=_rows, cols=_cols,
-            left=left_inch, top=top_inch, width=width_inch, height=height_inch
-        ).table
+        table = self.generate_table(slide, _rows, _cols)
 
         for i in range(0, _cols):
             cell = table.cell(0, i)
@@ -88,7 +91,27 @@ class BaseSevice:
         raise Exception("Not implemented")
     
     def generate_investing_rounds_slide(self, prs: Presentation, data: CreatePresentation):
-        raise Exception("Not implemented")
+        investing_rounds = data.investing_rounds;
+        if len(investing_rounds) > 1:
+            raise Exception("Not implemented")
+        title_and_content_layout = prs.slide_layouts[5]
+        slide = prs.slides.add_slide(title_and_content_layout)
+
+        stage = investing_rounds[0].stage
+        amount = investing_rounds[0].amount
+
+        _title = slide.shapes.title
+        _title.text = f"За {stage.value} будет привлечено {amount} рублей"
+        if investing_rounds[0].fraction:
+            _title.text += f" за долю в компании {investing_rounds[0].fraction}"
+
+        _rows = 2
+        _cols = len(investing_rounds[0].spending)
+        table = self.generate_table(slide, _rows, _cols)
+        for i in range(0, _cols):
+            print(investing_rounds[0].spending[i])
+            table.cell(0, i).text = investing_rounds[0].spending[i].name
+            table.cell(1, i).text = investing_rounds[0].spending[i].percent
     
     def generate_roadmap_slide(self, prs: Presentation, data: CreatePresentation):
         raise Exception("Not implemented")
@@ -102,18 +125,10 @@ class BaseSevice:
         _title = slide.shapes.title
         _title.text = "Бизнес-модель"
 
-        left_inch = Inches(1.0)
-        top_inch = Inches(2.0)
-        width_inch = Inches(8.0)
-        height_inch = Inches(3)
-
         _rows = 3
         _cols = len(data.business_units)
 
-        table = slide.shapes.add_table(
-            rows=_rows, cols=_cols,
-            left=left_inch, top=top_inch, width=width_inch, height=height_inch
-        ).table
+        table = self.generate_table(slide, _rows, _cols)
 
         for i in range(0, _cols):
             table.cell(0, i).text = data.business_units[i].name
@@ -136,6 +151,7 @@ class BaseSevice:
         self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
         self.generate_business_units_slide(prs, data)
+        self.generate_investing_rounds_slide(prs, data)
 
         prs.save(str(file))
         return FileResponse(
