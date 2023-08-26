@@ -112,7 +112,6 @@ class BaseSevice:
         _cols = len(investing_rounds[0].spending)
         table = self.create_table(slide, _rows, _cols)
         for i in range(0, _cols):
-            print(investing_rounds[0].spending[i])
             table.cell(0, i).text = investing_rounds[0].spending[i].name
             table.cell(1, i).text = investing_rounds[0].spending[i].percent
     
