@@ -22,6 +22,11 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
+from pptx.enum.chart import XL_CHART_TYPE
+from pptx.chart.data import CategoryChartData
+from pptx.enum.chart import XL_TICK_MARK
+from pptx.enum.chart import XL_LABEL_POSITION
+
 class BaseSevice:
     def generate_template(self) -> Presentation:
         prs = Presentation(str(settings.templates_path / "1.pptx"))
@@ -173,6 +178,7 @@ class BaseSevice:
         description.text = '\n'.join(item.value for item in data.contacts) + '\n'
     
     def generate_business_units_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация 7 слайда - Бизнес-модель"""
         slide = self.create_slide(prs, 5, "Бизнес-модель")
 
         _rows = 3
@@ -184,6 +190,25 @@ class BaseSevice:
             table.cell(0, i).text = data.business_units[i].name
             table.cell(1, i).text = data.business_units[i].income
             table.cell(2, i).text = data.business_units[i].revenue_share
+
+    def generate_tracktion_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация 8 слайда - Трекшен"""
+        slide = self.create_slide(prs, 5, "Трекшен")
+        left = Inches(1)
+        top = Inches(1.5)
+        width = Inches(8)
+        height = Inches(5)
+        shapes = slide.shapes
+        tracktion = data.tracktion
+        chart_data = CategoryChartData()
+        chart_data.categories = [str(item.year) for item in tracktion]
+        chart_data.add_series("Выручка", (item.revenue for item in tracktion))
+        chart_data.add_series("Капитализация", (item.capitalization for item in tracktion))
+        chart = shapes.add_chart(
+            XL_CHART_TYPE.LINE, left, top, width, height, chart_data
+        )
+
+        chart.has_title = True
 
     async def create_presentation(self, data: CreatePresentation):
         prs = self.generate_template()
@@ -201,6 +226,7 @@ class BaseSevice:
         self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
         self.generate_business_units_slide(prs, data)
+        self.generate_tracktion_slide(prs, data)
         self.generate_investing_rounds_slide(prs, data)
         self.generate_members_slide(prs, data)
         self.generate_roadmap_slide(prs, data)
