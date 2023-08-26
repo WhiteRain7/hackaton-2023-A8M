@@ -78,6 +78,13 @@ class BusinessUnit(BaseModel):
     revenue_share: str = Field(description="Доля прибыли, 7 слайд - Бизнес-модель")
 
 
+class TracktionUnit(BaseModel):
+    year: int = Field(description="Год, 8 слайд - Трекшен")
+    caption: str = Field(description="Подпись к году, 8 слайд - Трекшен")
+    revenue: str = Field(description="Выручка, 8 слайд - Трекшен")
+    capitalization: str = Field(description="Капитализация, 8 слайд - Трекшен")
+
+
 class CreatePresentation(BaseModel):
     project_name: str = Field(description="Название проекта/компании, первый слайд - Проект")
     short_description: str = Field(
@@ -91,6 +98,7 @@ class CreatePresentation(BaseModel):
     # TODO Конкуренты 6 слайд, парсинг, на основе предыдущих 4 слайдов данные
     business_units: list[BusinessUnit] = Field(description="Бизнес-юниты, 7 слайд - Бизнес-модель")
     clients: list[str] = Field(description="Клиенты, maybe 8 слайд")  # TODO изображения
+    tracktion: list[TracktionUnit] = Field(description="Трекшены, 8 слайд - Трекшен")
     revenue: str | None = Field(description="Выручка, 9 слайд - Финансы") # Если компании нет
     clients_count: str = Field(description="Число клиентов, 9 слайд - Финансы")
     churn_rate: str = Field(description="Коэффициент оттока, 9 слайд - Финансы")
