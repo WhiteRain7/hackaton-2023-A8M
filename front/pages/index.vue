@@ -76,11 +76,10 @@
                 <div id="loader" v-if="ai_status != 'done'">
                     <p v-if="ai_status == 'waiting'">Сейчас нет операций</p>
                     <p v-else-if="ai_status == 'loading'">Подождите, текст формируется...</p>
-                    <p v-else-if="ai_status == 'missing'">Недостаточно данных с других полей</p>
+                    <p v-else-if="ai_status == 'missing'">Недостаточно данных - заполните какие-нибудь поля</p>
                     <p v-else-if="ai_status == 'error'">Произошла ошибка</p>
 
                     <span v-if="ai_status == 'loading'"></span>
-                    <button v-else></button>
                 </div>
 
                 <div v-else id="ai-content">
@@ -88,13 +87,23 @@
                 </div>
             </div>
             <menu id="ai-menu">
-                <input type="text" />
+                <form class="input-with-controls" @submit="ask_ai($event)">
+                    <input type="text" name="ai_prompt" id="ai_prompt" placeholder="Спросите ИИ что-нибудь" />
+                    <button type="submit" :disabled="ai_status == 'loading'">
+                        <p>отправить</p>
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38" fill="var(--colour-decoration-light)"><path d="M120-160v-640l760 320-760 320Zm60-93 544-227-544-230v168l242 62-242 60v167Zm0 0v-457 457Z"/></svg>
+                        </div>
+                    </button>
+                </form>
                 <form method="dialog">
-                    <button type="button" value="submit" @click="close_ai('submit')">применить</button>
                     <button type="button" value="close" @click="close_ai('close')">закрыть</button>
+                    <button type="button" value="submit" @click="close_ai('submit')" :disabled="ai_status != 'done'">применить</button>
                 </form>
             </menu>
         </dialog>
+
+        <logoEditor ref="logoEditor" />
 
         <main id="main">
             <form id="main-form" method="POST" action="http://localhost:8000/presentation/" target="_self" @submit="send($event)">
@@ -105,7 +114,7 @@
                         <label for="project_name">Название проекта</label>
                         <div class="input-with-controls">
                             <input type="text" name="project_name" id="project_name" placeholder="Название проекта" v-model="project_name" />
-                            <button type="button">
+                            <button type="button" @click="generate_for_project_name()">
                                 <p>вариант от ИИ</p>
                                 <div>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M385-120q-51 0-86.5-38T258-244q-59-5-98.5-49.5T120-402q0-22 5.5-42.5T142-484q-11-18-16.5-38t-5.5-43q0-60 41.5-103t98.5-50q2-51 38.5-86.5T386-840q29 0 51.5 10.5T480-799q20-20 42-30.5t51-10.5q50 0 86 35.5t39 86.5q58 5 100 48.5T840-565q0 23-6 43.5T817-483q11 20 17 42t6 43q0 64-39.5 106.5T702-244q-5 48-41 86t-86 38q-30 0-52-10t-43-30q-21 20-43 30t-52 10Zm125-600v480q0 25 19.5 42.5T576-180q26 0 45-23t21-47q-23-8-43-21.5T565-305q-8-11-6-22.5t13-19.5q11-8 22.5-6t19.5 13q13 18 32 27.5t42 9.5q38 0 65-26t27-69q0-9-2-18.5t-4-19.5q-18 13-39.5 19.5T690-410q-13 0-21.5-8.5T660-440q0-13 8.5-21.5T690-470q38 0 64-28t26-67q0-38-28-65t-64-29q-10 24-28.5 42.5T617-589q-12 5-23-.5T579-607q-4-12 1-23.5t17-15.5q18-6 29.5-24t11.5-41q0-29-19-49t-45-20q-26 0-45 17.5T510-720Zm-60 480v-480q0-25-18.5-42.5T386-780q-26 0-45.5 20T321-711q0 23 11 40.5t29 23.5q12 4 17.5 15.5T380-609q-5 12-16.5 18t-23.5 1q-24-8-42-26.5T270-659q-35 3-62.5 29.5T180-565q0 39 26 67t64 28q13 0 21.5 8.5T300-440q0 13-8.5 21.5T270-410q-23 0-44.5-7T186-436q-3 8-4.5 17t-1.5 18q0 43 26.5 70.5T271-303q22 0 41.5-10t32.5-27q8-10 20-12.5t22 5.5q10 8 12.5 20t-5.5 22q-14 20-33.5 33.5T318-250q2 24 21 47t46 23q27 0 46-17.5t19-42.5Zm30-240Z"/></svg>
@@ -156,6 +165,19 @@
                             <option value="WorkTech">Работа</option>
                         </datalist>
                     </div>
+
+                    <!--div>
+                        <label for="format">Формат вывода</label>
+                        <select name="format" id="format" v-model="format">
+                            <option value="pptx">Презентация PowerPoint (.pptx)</option>
+                            <option value="pdf">Портативный документ (.pdf)</option>
+                        </select>
+                    </div-->
+
+                    <div>
+                        <label for="logotype">Логотип</label>
+                        <button type="button" @click="$refs.logoEditor.show_logo_editor()">редактор</button>
+                    </div>
                 </fieldset>
 
                 <fieldset class="slide" id="slide-1">
@@ -168,7 +190,15 @@
 
                     <div>
                         <label for="short_description">Короткое описание</label>
-                        <input type="text" id="short_description" placeholder="Короткое описание" v-model="short_description" />
+                        <div class="input-with-controls">
+                            <input type="text" id="short_description" placeholder="Короткое описание" v-model="short_description" />
+                            <button type="button" @click="generate_for_short_description()">
+                                <p>вариант от ИИ</p>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M385-120q-51 0-86.5-38T258-244q-59-5-98.5-49.5T120-402q0-22 5.5-42.5T142-484q-11-18-16.5-38t-5.5-43q0-60 41.5-103t98.5-50q2-51 38.5-86.5T386-840q29 0 51.5 10.5T480-799q20-20 42-30.5t51-10.5q50 0 86 35.5t39 86.5q58 5 100 48.5T840-565q0 23-6 43.5T817-483q11 20 17 42t6 43q0 64-39.5 106.5T702-244q-5 48-41 86t-86 38q-30 0-52-10t-43-30q-21 20-43 30t-52 10Zm125-600v480q0 25 19.5 42.5T576-180q26 0 45-23t21-47q-23-8-43-21.5T565-305q-8-11-6-22.5t13-19.5q11-8 22.5-6t19.5 13q13 18 32 27.5t42 9.5q38 0 65-26t27-69q0-9-2-18.5t-4-19.5q-18 13-39.5 19.5T690-410q-13 0-21.5-8.5T660-440q0-13 8.5-21.5T690-470q38 0 64-28t26-67q0-38-28-65t-64-29q-10 24-28.5 42.5T617-589q-12 5-23-.5T579-607q-4-12 1-23.5t17-15.5q18-6 29.5-24t11.5-41q0-29-19-49t-45-20q-26 0-45 17.5T510-720Zm-60 480v-480q0-25-18.5-42.5T386-780q-26 0-45.5 20T321-711q0 23 11 40.5t29 23.5q12 4 17.5 15.5T380-609q-5 12-16.5 18t-23.5 1q-24-8-42-26.5T270-659q-35 3-62.5 29.5T180-565q0 39 26 67t64 28q13 0 21.5 8.5T300-440q0 13-8.5 21.5T270-410q-23 0-44.5-7T186-436q-3 8-4.5 17t-1.5 18q0 43 26.5 70.5T271-303q22 0 41.5-10t32.5-27q8-10 20-12.5t22 5.5q10 8 12.5 20t-5.5 22q-14 20-33.5 33.5T318-250q2 24 21 47t46 23q27 0 46-17.5t19-42.5Zm30-240Z"/></svg>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </fieldset>
 
@@ -195,7 +225,11 @@
                         <template v-for="i2 in problem[i-1].issue.length">
                             <textarea name="issue" placeholder="Описание проблемы" v-model="problem[i-1].issue[i2-1]"></textarea>
                             <textarea name="solution" class="with-margin" placeholder="Решение проблемы" v-model="problem[i-1].solution[i2-1]"></textarea>
-                            <button type="button" class="click-button with-margin" @click="remove_problem(i-1, i2-1)">Удалить проблему</button>
+
+                            <menu>
+                                <button type="button" class="click-button with-margin" @click="remove_problem(i-1, i2-1)">Удалить проблему</button>
+                                <button type="button" class="click-button button-AI" @click="generate_for_solution(i-1, i2-1)">решение от ИИ</button>
+                            </menu>
                         </template>
                         <hr />
                     </div>
@@ -539,7 +573,15 @@
                     <div v-for="i in market.length">
                         <label>Рынок {{ market[i-1].type }}</label>
 
-                        <input type="text" name="market" placeholder="Название рынка" v-model="market[i-1].name" />
+                        <div class="input-with-controls">
+                            <input type="text" name="market" placeholder="Название рынка" v-model="market[i-1].name" />
+                            <button type="button" @click="generate_for_market(i-1)">
+                                <p>вариант от ИИ</p>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M385-120q-51 0-86.5-38T258-244q-59-5-98.5-49.5T120-402q0-22 5.5-42.5T142-484q-11-18-16.5-38t-5.5-43q0-60 41.5-103t98.5-50q2-51 38.5-86.5T386-840q29 0 51.5 10.5T480-799q20-20 42-30.5t51-10.5q50 0 86 35.5t39 86.5q58 5 100 48.5T840-565q0 23-6 43.5T817-483q11 20 17 42t6 43q0 64-39.5 106.5T702-244q-5 48-41 86t-86 38q-30 0-52-10t-43-30q-21 20-43 30t-52 10Zm125-600v480q0 25 19.5 42.5T576-180q26 0 45-23t21-47q-23-8-43-21.5T565-305q-8-11-6-22.5t13-19.5q11-8 22.5-6t19.5 13q13 18 32 27.5t42 9.5q38 0 65-26t27-69q0-9-2-18.5t-4-19.5q-18 13-39.5 19.5T690-410q-13 0-21.5-8.5T660-440q0-13 8.5-21.5T690-470q38 0 64-28t26-67q0-38-28-65t-64-29q-10 24-28.5 42.5T617-589q-12 5-23-.5T579-607q-4-12 1-23.5t17-15.5q18-6 29.5-24t11.5-41q0-29-19-49t-45-20q-26 0-45 17.5T510-720Zm-60 480v-480q0-25-18.5-42.5T386-780q-26 0-45.5 20T321-711q0 23 11 40.5t29 23.5q12 4 17.5 15.5T380-609q-5 12-16.5 18t-23.5 1q-24-8-42-26.5T270-659q-35 3-62.5 29.5T180-565q0 39 26 67t64 28q13 0 21.5 8.5T300-440q0 13-8.5 21.5T270-410q-23 0-44.5-7T186-436q-3 8-4.5 17t-1.5 18q0 43 26.5 70.5T271-303q22 0 41.5-10t32.5-27q8-10 20-12.5t22 5.5q10 8 12.5 20t-5.5 22q-14 20-33.5 33.5T318-250q2 24 21 47t46 23q27 0 46-17.5t19-42.5Zm30-240Z"/></svg>
+                                </div>
+                            </button>
+                        </div>
 
                         <div class="input-number-with-controls with-margin">
                             <input type="number" placeholder="Объём рынка" title="Объём рынка" v-model="market[i-1].volume"/>
@@ -715,6 +757,12 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M360-200q-22 0-40-11.5T289-241L120-480l169-239q13-18 31-29.5t40-11.5h420q24.75 0 42.375 17.625T840-700v440q0 24.75-17.625 42.375T780-200H360Zm420-60v-440 440Zm-431 0h431v-440H349L195-480l154 220Zm99-66 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Z"/></svg>
                                 </div>
                             </button>
+                            <button type="button" @click="improve_sentence_for(['roadmap', i-1, 'name'])">
+                                <p>улучшение от ИИ</p>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="38" height="38"><path d="M385-120q-51 0-86.5-38T258-244q-59-5-98.5-49.5T120-402q0-22 5.5-42.5T142-484q-11-18-16.5-38t-5.5-43q0-60 41.5-103t98.5-50q2-51 38.5-86.5T386-840q29 0 51.5 10.5T480-799q20-20 42-30.5t51-10.5q50 0 86 35.5t39 86.5q58 5 100 48.5T840-565q0 23-6 43.5T817-483q11 20 17 42t6 43q0 64-39.5 106.5T702-244q-5 48-41 86t-86 38q-30 0-52-10t-43-30q-21 20-43 30t-52 10Zm125-600v480q0 25 19.5 42.5T576-180q26 0 45-23t21-47q-23-8-43-21.5T565-305q-8-11-6-22.5t13-19.5q11-8 22.5-6t19.5 13q13 18 32 27.5t42 9.5q38 0 65-26t27-69q0-9-2-18.5t-4-19.5q-18 13-39.5 19.5T690-410q-13 0-21.5-8.5T660-440q0-13 8.5-21.5T690-470q38 0 64-28t26-67q0-38-28-65t-64-29q-10 24-28.5 42.5T617-589q-12 5-23-.5T579-607q-4-12 1-23.5t17-15.5q18-6 29.5-24t11.5-41q0-29-19-49t-45-20q-26 0-45 17.5T510-720Zm-60 480v-480q0-25-18.5-42.5T386-780q-26 0-45.5 20T321-711q0 23 11 40.5t29 23.5q12 4 17.5 15.5T380-609q-5 12-16.5 18t-23.5 1q-24-8-42-26.5T270-659q-35 3-62.5 29.5T180-565q0 39 26 67t64 28q13 0 21.5 8.5T300-440q0 13-8.5 21.5T270-410q-23 0-44.5-7T186-436q-3 8-4.5 17t-1.5 18q0 43 26.5 70.5T271-303q22 0 41.5-10t32.5-27q8-10 20-12.5t22 5.5q10 8 12.5 20t-5.5 22q-14 20-33.5 33.5T318-250q2 24 21 47t46 23q27 0 46-17.5t19-42.5Zm30-240Z"/></svg>
+                                </div>
+                            </button>
                         </div>
 
                         <div class="with-margin">
@@ -806,16 +854,13 @@
             <option>тыс. руб.</option>
             <option>млн руб.</option>
         </datalist>
-
-        <footer id="footer">
-
-        </footer>
     </div>
 </template>
 
 <script>
 import NavButton from '~/components/navButton.vue';
 import navButton from '~/components/navButton.vue';
+import logoEditor from '~/components/logoEditor.vue';
 
 export default {
     name: 'indexPage',
@@ -827,6 +872,8 @@ export default {
 
             project_name: '',
             short_description: '',
+
+            format: 'pptx',
 
             problem: [
                 {
@@ -1003,6 +1050,12 @@ export default {
 
             // result = result.replaceAll(/["'a-z\-]+\s*/gi, '')
 
+            result = result.replaceAll(/\\[ntrav]/gi, '')
+            result = result.replaceAll('\\', '')
+
+            if (result.startsWith('"')) result = result.substring(1)
+            if (result.endsWith('"')) result = result.substring(0, result.length - 1)
+
             return result
         },
 
@@ -1024,11 +1077,171 @@ export default {
             this.ai_status = 'waiting'
 
             if (operation == 'submit') {
-                this[this.ai_for] = this.ai_text
+                if (typeof this.ai_for == 'string') this[this.ai_for] = this.ai_text
+                else if (typeof this.ai_for == 'object') {
+                    let receiver = this
+                    for (let i = 0; i < this.ai_for.length - 1; i++) {
+                        receiver = receiver[this.ai_for[i]]
+                    }
+                    receiver[this.ai_for[this.ai_for.length - 1]] = this.ai_text
+                }
             }
 
             this.ai_text = ''
             this.ai_for = ''
+        },
+
+        async ask_ai (event) {
+            event.preventDefault()
+
+            let value = document.getElementById('ai_prompt').value
+            if (!value) return
+
+            this.ai_status = 'loading'
+
+            const response = await fetch(
+                'http://127.0.0.1:8000/hugchat/',
+                {
+                    method: 'POST',
+                    body: value
+                }
+            )
+
+            this.ai_text = (await response.text()).replaceAll('\\n', '')
+            this.ai_status = 'done'
+        },
+
+        generate_for_project_name: async function () {
+            this.ai_for = 'project_name'
+            this.show_ai_screen()
+
+            if (!this.any_of(
+                this.short_description,
+                this.description,
+                this.sphere,
+            )) {
+                this.ai_status = 'missing'
+                return
+            }
+
+            this.ai_status = 'loading'
+
+            try {
+                let request = '"'
+
+                if (this.description) request += this.add_to_request('description')
+                else request += this.add_to_request('short_description')
+                request += this.add_to_request('sphere')
+
+                request += this.finish_request('Write me a single project name based on my data above.')
+
+                const response = await fetch(
+                    'http://127.0.0.1:8000/hugchat/',
+                    {
+                        method: 'POST',
+                        body: request
+                    }
+                )
+
+                let text = await response.text()
+                text = await this.try_unarmour_result(text)
+                // text = await this.translate(text)
+
+                this.ai_text = text
+                this.ai_status = 'done'
+            }
+            catch (e) {
+                this.ai_status = 'error'
+            }
+        },
+
+        generate_for_short_description: async function () {
+            this.ai_for = 'short_description'
+            this.show_ai_screen()
+
+            if (!this.any_of(
+                this.project_name,
+                this.description,
+                this.sphere,
+            )) {
+                this.ai_status = 'missing'
+                return
+            }
+
+            this.ai_status = 'loading'
+
+            try {
+                let request = '"'
+
+                request += this.add_to_request('project_name')
+                request += this.add_to_request('description')
+                request += this.add_to_request('sphere')
+
+                request += this.finish_request('Write me a short tagline with a few words based on my data above.')
+
+                const response = await fetch(
+                    'http://127.0.0.1:8000/hugchat/',
+                    {
+                        method: 'POST',
+                        body: request
+                    }
+                )
+
+                let text = await response.text()
+                text = await this.try_unarmour_result(text)
+                // text = await this.translate(text)
+
+                this.ai_text = text
+                this.ai_status = 'done'
+            }
+            catch (e) {
+                this.ai_status = 'error'
+            }
+        },
+
+        generate_for_solution: async function (i, i2) {
+            this.ai_for = ['problem', i, 'solution', i2]
+            this.show_ai_screen()
+
+            let audience = this.problem[i].target_audience
+            let problem = this.problem[i].issue[i2]
+
+            if (!problem || !audience || !(this.project_name || this.short_description || this.sphere)) {
+                this.ai_status = 'missing'
+                return
+            }
+
+            this.ai_status = 'loading'
+
+            try {
+                let request = '"'
+
+                request += 'Target audience: ' + audience + '; '
+                request += 'Problem: ' + problem + ';'
+                request += this.add_to_request('project_name')
+                request += this.add_to_request('short_description')
+                request += this.add_to_request('sphere')
+
+                request += this.finish_request('Write me a solution just in a few words based on audience with problem above.')
+
+                const response = await fetch(
+                    'http://127.0.0.1:8000/hugchat/',
+                    {
+                        method: 'POST',
+                        body: request
+                    }
+                )
+
+                let text = await response.text()
+                text = await this.try_unarmour_result(text)
+                // text = await this.translate(text)
+
+                this.ai_text = text
+                this.ai_status = 'done'
+            }
+            catch (e) {
+                this.ai_status = 'error'
+            }
         },
 
         generate_for_description: async function () {
@@ -1053,9 +1266,7 @@ export default {
                 request += this.add_to_request('short_description')
                 request += this.add_to_request('sphere')
 
-                request += this.finish_request('Write me a detailed description based on my data above.')
-
-                console.log(request)
+                request += this.finish_request('Write me a short description with just 1 sentence based on my data above.')
 
                 const response = await fetch(
                     'http://127.0.0.1:8000/hugchat/',
@@ -1073,6 +1284,101 @@ export default {
                 this.ai_status = 'done'
             }
             catch (e) {
+                this.ai_status = 'error'
+            }
+        },
+
+        generate_for_market: async function (i) {
+            this.ai_for = ['market', i, 'name']
+            this.show_ai_screen()
+
+            if (!this.any_of(
+                this.project_name,
+                this.short_description,
+                this.description,
+                this.sphere,
+            )) {
+                this.ai_status = 'missing'
+                return
+            }
+
+            this.ai_status = 'loading'
+
+            try {
+                let request = '"'
+
+                request += this.add_to_request('project_name')
+                if (this.description) request += this.add_to_request('description')
+                else request += this.add_to_request('short_description')
+                request += this.add_to_request('sphere')
+
+                let market_type = this.market[i].type
+                request += this.finish_request(`Write me a name of ${market_type} market for this project in a few words based on my data above.`)
+
+                const response = await fetch(
+                    'http://127.0.0.1:8000/hugchat/',
+                    {
+                        method: 'POST',
+                        body: request
+                    }
+                )
+
+                let text = await response.text()
+                text = await this.try_unarmour_result(text)
+                // text = await this.translate(text)
+
+                this.ai_text = text
+                this.ai_status = 'done'
+            }
+            catch {
+                this.ai_status = 'error'
+            }
+        },
+
+        improve_sentence_for: async function (param) {
+            this.ai_for = param
+            this.show_ai_screen()
+
+            let value = ''
+            if (typeof param == 'string') value = this[param]
+            else if (typeof param == 'object') {
+                let recevier = this
+                for (let i = 0; i < param.length - 1; i++) {
+                    recevier = recevier[param[i]]
+                }
+                value = recevier[param[param.length - 1]]
+            }
+
+            if (!value) {
+                this.ai_status = 'missing'
+                return
+            }
+
+            this.ai_status = 'loading'
+
+            try {
+                let request = '"Sentence: '
+
+                request += value
+
+                request += this.finish_request(`Improve my sentence above.`)
+
+                const response = await fetch(
+                    'http://127.0.0.1:8000/hugchat/',
+                    {
+                        method: 'POST',
+                        body: request
+                    }
+                )
+
+                let text = await response.text()
+                text = await this.try_unarmour_result(text)
+                // text = await this.translate(text)
+
+                this.ai_text = text
+                this.ai_status = 'done'
+            }
+            catch {
                 this.ai_status = 'error'
             }
         },
@@ -1455,6 +1761,7 @@ export default {
             const body = {
                 project_name: this.project_name,
                 short_description: this.short_description,
+                // format: this.format,
                 problem: this.problem,
                 description: this.description,
                 business_units: this.business_units,
@@ -1509,7 +1816,7 @@ export default {
             for (let i = 0; i < body.market.length; i++) {
                 body.market[i].volume = body.market[i].volume.toString() + ' ' + (body.market[i].volume_suffix ?? '')
 
-                body.market[i].market.trim()
+                body.market[i].volume.trim()
             }
 
             console.log(body)
@@ -1570,6 +1877,7 @@ export default {
         reset: function () {
             this.project_name = '';
             this.short_description = '';
+            this.format = 'pptx';
             this.problem = [
                 {
                     target_audience: '',
@@ -1596,6 +1904,7 @@ export default {
                     capitalization: 0,
                 }
             ];
+            this.opponents = [''];
             this.revenue = 0;
             this.revenue_suffix = '';
             this.clients_count = 0;
@@ -1643,6 +1952,26 @@ export default {
                 }
             ]
             this.sphere = ""
+            this.market = [
+                {
+                    market: 'TAM',
+                    name: '',
+                    volume: 0,
+                    volume_suffix: ''
+                },
+                {
+                    type: 'SAM',
+                    name: '',
+                    volume: 0,
+                    volume_suffix: '',
+                },
+                {
+                    type: 'SOM',
+                    name: '',
+                    volume: 0,
+                    volume_suffix: '',
+                }
+            ]
 
             try { document.getElementById('org_data').innerHTML = "" } catch {}
         }
@@ -2328,6 +2657,12 @@ body {
 }
 
 .slide menu {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
     padding: 0 20px;
 }
 
@@ -2340,6 +2675,7 @@ body {
     flex-direction: column;
     flex-wrap: nowrap;
     margin: auto;
+    box-sizing: border-box;
     width: 90%;
     max-width: 900px;
     height: 90%;
@@ -2348,8 +2684,12 @@ body {
     background-color: var(--colour-back);
     background-clip: border-box;
 }
+#ai-panel::backdrop {
+    background-color: #272a2c;
+    opacity: .8;
+}
 
-#loader {
+#ai-panel > div {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
@@ -2358,6 +2698,64 @@ body {
     align-items: center;
     gap: 20px;
     width: 100%;
+    height: 100px;
+}
+
+:is(#loader, #ai-content) {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+}
+
+#loader > p {
+    font-size: 30px;
+    text-align: center;
+}
+
+#loader > span {
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border: 10px solid var(--colour-decoration-alt);
+    border-radius: 666px;
+    clip-path: polygon(0% 0%, 0% 30%, 50% 50%, 100% 30%, 100% 0%);
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+        border-color: var(--colour-decoration-alt);
+    }
+    50% {
+        transform: rotate(180deg);
+        border-color: var(--colour-decoration);
+    }
+    to {
+        transform: rotate(360deg);
+        border-color: var(--colour-decoration-alt);
+    }
+}
+
+#ai-content {
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px;
+    font-size: 18px;
+    line-height: 1.5;
+    overflow: auto;
+}
+#ai-content::before {
+    content: 'AI: ';
+    font-weight: bold;
+    color: #006e72;
+    font-size: 20px;
 }
 
 #ai-menu {
@@ -2369,10 +2767,18 @@ body {
     gap: 10px;
     box-sizing: border-box;
     width: 100%;
+    padding: 10px;
     border-top: 2px solid var(--colour-decoration-alt);
 }
 
+#ai-menu > form:first-child {
+    width: 100%;
+}
+
 #ai-menu input[type='text'] {
+    display: flex;
+    flex-shrink: 1;
+    box-sizing: border-box;
     width: 100%;
     height: 40px;
     padding: 6px 10px;
@@ -2389,17 +2795,19 @@ body {
     background-color: var(--colour-decoration-light);
 }
 
-#ai-menu form {
+#ai-menu > form:last-child {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+    width: 100%;
 }
 
 #ai-menu form button {
     display: flex;
-    flex-grow: 1px;
+    flex-grow: 1;
     justify-content: center;
     align-items: center;
     width: 40px;
@@ -2425,6 +2833,16 @@ body {
 }
 .nav-fulfilled:hover {
     background-color: #6cad80 !important;
+}
+
+
+::-webkit-scrollbar {
+    width: 10px;
+    background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--colour-decoration-alt), var(--colour-decoration));
 }
 
 
