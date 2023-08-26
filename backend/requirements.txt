@@ -3,3 +3,4 @@ pydantic==2.3.0
 pydantic-settings==2.0.3
 uvicorn==0.23.2
 python-pptx==0.6.21
+hugchat==0.2.0

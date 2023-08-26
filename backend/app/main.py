@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .hugchat.api import init_hugchat
 from .routers import router
 from .config import settings
 
@@ -20,3 +21,8 @@ app.add_middleware(
 )
 
 app.include_router(router)
+
+
+@app.on_event("startup")
+async def startup():
+    init_hugchat()
