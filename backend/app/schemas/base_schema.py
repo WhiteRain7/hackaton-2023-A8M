@@ -105,9 +105,12 @@ class CreatePresentation(BaseModel):
     clients_count: str = Field(description="Число клиентов, 9 слайд - Финансы")
     churn_rate: str = Field(description="Коэффициент оттока, 9 слайд - Финансы")
     inn: str | None = Field(
-        description="Инн компании, если существует, для парсинга в checko"
+        description="Инн компании, если существует, для парсинга"
     )
-    is_exist: bool = Field(default=False, description="Существует ли компания, для инн")
+    ogrn: str | None = Field(
+        description="Огрн компании, если существует, для парсинга в checko"
+    )
+    is_exist: bool = Field(default=False, description="Существует ли компания, для огрн")
     # TODO: https://checko.ru/company/anspot-1217700374495 парсинг Конкуренты + финансы (выручка + капитализация по годам) + Контакты
     members: list[Member] = Field(description="Члены команды, 10 слайд - Команда")
     investors: list[Investor] | None = Field(
