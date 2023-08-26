@@ -31,6 +31,7 @@ from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_SHAPE
 import random
 
 import numpy as np
+from matplotlib.dates import DayLocator, MonthLocator, YearLocator
 
 class BaseSevice:
     def generate_template(self) -> Presentation:
@@ -207,9 +208,25 @@ class BaseSevice:
             ax.barh(i, (step.end_date - step.start_date).days, left=step.start_date, height=0.5, align='center')
         ax.set_yticks(range(len(steps)))
         ax.set_yticklabels([step.name for step in steps])
+
+        mentioned_dates = [step.start_date for step in steps] + [step.end_date for step in steps]
+
+        yloc = YearLocator()
+        mloc = MonthLocator()
+        nloc = DayLocator(interval=7)
+        dloc = DayLocator()
         ax.xaxis_date()
-        # FIXME: дату на основе месяца/года
-        ax.xaxis.set_major_locator(mdates.DayLocator(interval=30))
+        ax.set_xlim(min(mentioned_dates), max(mentioned_dates))
+        days = max(mentioned_dates).toordinal() - min(mentioned_dates).toordinal()
+        if days > 600:
+            ax.xaxis.set_major_locator(yloc)
+            ax.xaxis.set_minor_locator(mloc)
+        elif days > 60:
+            ax.xaxis.set_major_locator(mloc)
+            ax.xaxis.set_minor_locator(dloc)
+        else:
+            ax.xaxis.set_major_locator(nloc)
+            ax.xaxis.set_minor_locator(dloc)
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
         image_stream = BytesIO()
