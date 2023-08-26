@@ -201,7 +201,7 @@ class BaseSevice:
         fig, ax = plt.subplots(figsize=(8, 4))
         steps = data.roadmap
         for i, step in enumerate(steps):
-            ax.barh(i, (step.end_date - step.start_date).days, left=step.start_date.toordinal(), height=0.5, align='center')
+            ax.barh(i, (step.end_date - step.start_date).days, left=step.start_date, height=0.5, align='center')
         ax.set_yticks(range(len(steps)))
         ax.set_yticklabels([step.name for step in steps])
         ax.xaxis_date()
