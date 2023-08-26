@@ -64,11 +64,12 @@ class BaseSevice:
                 cell.text = content
 
     def generate_problems_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация второго слайда - Проблемы"""
         self.generate_table_slide(prs, data, "Проблемы", lambda x: x.issue)
 
     def generate_solution_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация четвёртого слайда - Решение"""
         self.generate_table_slide(prs, data, "Решение", lambda x: x.solution)
-
 
     def generate_description_slide(self, prs: Presentation, data: CreatePresentation) -> None:
         """Генерация третьего слайда - Описание"""
