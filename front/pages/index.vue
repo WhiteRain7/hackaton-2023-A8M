@@ -88,7 +88,7 @@
             </div>
             <menu id="ai-menu">
                 <form class="input-with-controls" @submit="ask_ai($event)">
-                    <input type="text" name="ai_prompt" id="ai_prompt" placeholder="Спросите ИИ что-нибудь" />
+                    <input type="text" name="ai_prompt" id="ai_prompt" placeholder="Или спросите ИИ что вам нужно" />
                     <button type="submit" :disabled="ai_status == 'loading'">
                         <p>отправить</p>
                         <div>
@@ -102,8 +102,6 @@
                 </form>
             </menu>
         </dialog>
-
-        <logoEditor ref="logoEditor" />
 
         <main id="main">
             <form id="main-form" method="POST" action="http://localhost:8000/presentation/" target="_self" @submit="send($event)">
@@ -173,15 +171,10 @@
                             <option value="pdf">Портативный документ (.pdf)</option>
                         </select>
                     </div-->
-
-                    <div>
-                        <label for="logotype">Логотип</label>
-                        <button type="button" @click="$refs.logoEditor.show_logo_editor()">редактор</button>
-                    </div>
                 </fieldset>
 
                 <fieldset class="slide" id="slide-1">
-                    <h1>Проект</h1>
+                    <h1>1. Проект</h1>
 
                     <div>
                         <label for="project_name-2">Название проекта</label>
@@ -203,7 +196,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-2">
-                    <h1>Целевая аудитория</h1>
+                    <h1>2. Целевая аудитория</h1>
 
                     <div v-for="i in problem.length">
                         <div class="input-with-controls">
@@ -240,7 +233,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-3">
-                    <h1>Описание</h1>
+                    <h1>3. Описание</h1>
 
                     <div>
                         <label for="description">Описание</label>
@@ -260,7 +253,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-4">
-                    <h1>Бизнес-модели</h1>
+                    <h1>4. Бизнес-модели</h1>
 
                     <div v-for="i in business_units.length">
                         <div class="input-with-controls">
@@ -326,7 +319,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-5">
-                    <h1>Клиенты</h1>
+                    <h1>5. Клиенты</h1>
 
                     <div v-for="i in clients.length">
                         <div class="input-with-controls">
@@ -346,7 +339,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-6">
-                    <h1>Прибыль</h1>
+                    <h1>6. Прибыль</h1>
 
                     <div>
                         <label for="revenue">Прибыль</label>
@@ -446,7 +439,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-7">
-                    <h1>Трекшн</h1>
+                    <h1>7. Трекшн</h1>
 
                     <div v-for="i in tracktion.length">
                         <label>Год и заголовок</label>
@@ -470,7 +463,7 @@
                             </button>
                         </div>
 
-                        <label>Прибыль и капитализация</label>
+                        <label>Прибыль</label>
                         <div class="input-number-with-controls with-margin">
                             <input type="number" placeholder="Прибыль в этом году" title="Прибыль в этом году" v-model="tracktion[i-1].revenue"/>
                             <input type="text" list="amount_list" class="small-input" placeholder="ед." v-model="tracktion[i-1].tracktion_revenue_suffix"/>
@@ -496,16 +489,34 @@
                                     </svg>
                                 </button>
                             </div>
-                            <input
-                                type="number"
-                                class="small-input"
-                                placeholder="Капитализация"
-                                title="Капитализация"
-                                min="0" max="100" step="1"
-                                v-model="tracktion[i-1].capitalization"
-                                @input="tracktion[i-1].capitalization = Math.max(0, Math.min(100, $event.target.value))"
-                            />
-                            %
+                        </div>
+
+                        <label>Капитализация</label>
+                        <div class="input-number-with-controls with-margin">
+                            <input type="number" placeholder="Капитализация в этом году" title="Капитализация в этом году" v-model="tracktion[i-1].capitalization"/>
+                            <input type="text" list="amount_list" class="small-input" placeholder="ед." v-model="tracktion[i-1].tracktion_capitalization_suffix"/>
+                            <div>
+                                <button type="button" class="controls-red-button" @click="tracktion[i-1].capitalization -= 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M200-450v-60h560v60H200Z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="controls-green-button" @click="tracktion[i-1].capitalization = Number(tracktion[i-1].capitalization) + 1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 -960 960 960"
+                                        width="32"
+                                        height="32"
+                                    >
+                                        <path d="M450-450H200v-60h250v-250h60v250h250v60H510v250h-60v-250Z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <!--label>Капитализация</label>
@@ -534,7 +545,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-8">
-                    <h1>Команда</h1>
+                    <h1>8. Команда</h1>
 
                     <div v-for="i in members.length">
                         <div class="input-with-controls">
@@ -568,7 +579,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-9">
-                    <h1>Рынок</h1>
+                    <h1>9. Рынок</h1>
 
                     <div v-for="i in market.length">
                         <label>Рынок {{ market[i-1].type }}</label>
@@ -615,7 +626,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-10">
-                    <h1>Спонсоры</h1>
+                    <h1>10. Спонсоры</h1>
 
                     <div>
                         <label>Спонсоры</label>
@@ -746,7 +757,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-11">
-                    <h1>Дорожная карта проекта</h1>
+                    <h1>11. Дорожная карта проекта</h1>
 
                     <div v-for="i in roadmap.length">
                         <div class="input-with-controls">
@@ -782,7 +793,7 @@
                 </fieldset>
 
                 <fieldset class="slide" id="slide-12">
-                    <h1>Контакты</h1>
+                    <h1>12. Контакты</h1>
 
                     <div v-for="i in contacts.length">
                         <div>
@@ -824,15 +835,15 @@
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'vk'">
-                            <input type="text" name="vk" placeholder="https://vk.com/userid" v-model="contacts[i-1].value" />
+                            <input type="text" name="vk" placeholder="vk.com/userid" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'ok'">
-                            <input type="text" name="ok" placeholder="https://ok.ru/userid" v-model="contacts[i-1].value" />
+                            <input type="text" name="ok" placeholder="ok.ru/userid" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else-if="contacts[i-1].type == 'telegram'">
-                            <input type="text" name="telegram" placeholder="https://t.me/userid" v-model="contacts[i-1].value" />
+                            <input type="text" name="telegram" placeholder="t.me/userid" v-model="contacts[i-1].value" />
                         </div>
 
                         <div class="with-margin" v-else>
@@ -860,7 +871,6 @@
 <script>
 import NavButton from '~/components/navButton.vue';
 import navButton from '~/components/navButton.vue';
-import logoEditor from '~/components/logoEditor.vue';
 
 export default {
     name: 'indexPage',
@@ -902,7 +912,8 @@ export default {
                     caption: '',
                     revenue: 0,
                     tracktion_revenue_suffix: '',
-                    capitalization: 0
+                    capitalization: 0,
+                    tracktion_capitalization_suffix: '',
                 }
             ],
 
@@ -1596,7 +1607,8 @@ export default {
                 caption: '',
                 revenue: 0,
                 tracktion_revenue_suffix: '',
-                capitalization: 0
+                capitalization: 0,
+                tracktion_capitalization_suffix: ''
             });
         },
 
@@ -1797,7 +1809,7 @@ export default {
 
             for (let i = 0; i < body.tracktion.length; i++) {
                 body.tracktion[i].revenue = body.tracktion[i].revenue.toString() + ' ' + (body.tracktion[i].tracktion_revenue_suffix ?? '')
-                body.tracktion[i].capitalization = body.tracktion[i].capitalization.toString()
+                body.tracktion[i].capitalization = body.tracktion[i].capitalization.toString() + ' ' + (body.tracktion[i].tracktion_capitalization_suffix ?? '')
 
                 body.tracktion[i].revenue.trim()
                 body.tracktion[i].capitalization.trim()
@@ -1856,7 +1868,7 @@ export default {
 
             for (let i = 0; i < body.tracktion.length; i++) {
                 body.tracktion[i].revenue = Number(body.tracktion[i].revenue.split(' ')[0])
-                body.tracktion[i].capitalization = Number(body.tracktion[i].capitalization)
+                body.tracktion[i].capitalization = Number(body.tracktion[i].capitalization.split(' ')[0])
             }
 
             // investing_rounds spendings from ints to strs
@@ -1902,6 +1914,7 @@ export default {
                     revenue: 0,
                     tracktion_revenue_suffix: '',
                     capitalization: 0,
+                    tracktion_capitalization_suffix: ''
                 }
             ];
             this.opponents = [''];
