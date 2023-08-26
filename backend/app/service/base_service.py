@@ -29,13 +29,20 @@ from pptx.enum.chart import XL_LABEL_POSITION
 
 from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_SHAPE
 
+pres_temp = 1
+
 class BaseSevice:
     def generate_template(self) -> Presentation:
-        prs = Presentation(str(settings.templates_path / "1.pptx"))
+        global pres_temp
+        pres_temp += 1
+        if pres_temp > 5:
+            pres_temp = 1
+        print(pres_temp)
+        prs = Presentation(str(settings.templates_path / f'{pres_temp}.pptx'))
         return prs
 
     def generate_filename(self) -> Path:
-        return settings.media_path / "test.pptx"  # f"{time()}.pptx"
+        return settings.media_path / f"{time()}.pptx"
     
     def create_table(self, slide, _rows, _cols):
         left_inch = Inches(1.0)
