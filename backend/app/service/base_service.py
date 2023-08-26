@@ -55,7 +55,7 @@ class BaseSevice:
             for cell in row.cells:
                 cell.text = ""
                 cell.fill.solid()
-                cell.fill.fore_color.rgb = RGBColor(255, 255, 255)
+                cell.fill.background()
                 cell.vertical_anchor = MSO_ANCHOR.MIDDLE
                 for paragraph in cell.text_frame.paragraphs:
                     paragraph.alignment = PP_ALIGN.CENTER # Don't work
@@ -256,6 +256,12 @@ class BaseSevice:
         )
 
         chart.has_title = True
+    
+    def generate_finance_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация 9 слайда - Финансы"""
+        slide = self.create_slide(prs, 1, "Финансы")
+        description = slide.placeholders[1]
+        description.text = f"\nВыручка: {data.revenue} руб\nЧисло клиентов: {data.clients_count}\nChurn Rate: {data.churn_rate}%\nAPRU = {int(data.revenue) / int(data.clients_count)} руб\nLT = {1 / (int(data.churn_rate) / 100)} лет\nLTV = {(int(data.revenue) // int(data.clients_count)) * (1 // (int(data.churn_rate) / 100))}\n"
 
     async def create_presentation(self, data: CreatePresentation):
         prs = self.generate_template()
@@ -275,6 +281,7 @@ class BaseSevice:
         self.generate_market_slide(prs, data)
         self.generate_business_units_slide(prs, data)
         self.generate_tracktion_slide(prs, data)
+        self.generate_finance_slide(prs, data)
         self.generate_members_slide(prs, data)
         self.generate_investing_rounds_slide(prs, data)
         self.generate_roadmap_slide(prs, data)
