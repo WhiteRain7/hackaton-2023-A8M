@@ -141,7 +141,7 @@ class BaseSevice:
         for i, market_unit in enumerate(data.market):
             left_offset = i * Inches(3.25)
             shape = shapes.add_shape(
-                MSO_SHAPE.ROUNDED_RECTANGLE, left + left_offset, top, width, height
+                MSO_SHAPE.OVAL, left + left_offset, top, width, height
             )
             
             fill = shape.fill
