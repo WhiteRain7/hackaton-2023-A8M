@@ -28,17 +28,13 @@ from pptx.enum.chart import XL_TICK_MARK
 from pptx.enum.chart import XL_LABEL_POSITION
 
 from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_SHAPE
+import random
 
-pres_temp = 1
 
 class BaseSevice:
     def generate_template(self) -> Presentation:
-        global pres_temp
-        pres_temp += 1
-        if pres_temp > 5:
-            pres_temp = 1
-        print(pres_temp)
-        prs = Presentation(str(settings.templates_path / f'{6}.pptx'))
+        pres_temp = random.randint(1,10)
+        prs = Presentation(str(settings.templates_path / f'{pres_temp}.pptx'))
         return prs
 
     def get_top_min(self, slide) -> int:
