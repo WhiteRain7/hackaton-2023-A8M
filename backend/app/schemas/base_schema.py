@@ -6,11 +6,11 @@ from decimal import Decimal
 
 
 class Problem(BaseModel):
-    issue: str = Field(description="Описание проблемы, второй слайд - Проблема")
+    issue: list[str] = Field(description="Описание проблемы, второй слайд - Проблема")
     target_audience: str = Field(
         description="Целевая аудитория, второй слайд - Проблема"
     )
-    solution: str = Field(description="Решение проблемы, четвертый слайд - Решение")
+    solution: list[str] = Field(description="Решение проблемы, четвертый слайд - Решение")
 
 
 class Member(BaseModel):

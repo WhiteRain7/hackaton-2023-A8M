@@ -28,3 +28,4 @@ class BaseSevice():
 
     async def delete_file(self, file):
         await anyio.run_sync_in_worker_thread(file.unlink)
+# https://github.com/Soulter/hugging-chat-api
