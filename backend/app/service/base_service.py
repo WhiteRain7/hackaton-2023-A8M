@@ -113,7 +113,7 @@ class BaseSevice:
 
         prs.save(str(file))
         return FileResponse(
-            file, headers={"Content-Disposition": f'attachment; filename="{file.name}"'}
+            file, headers={"Content-Disposition": f'attachment; filename="{file.name}"'}, background=BackgroundTask(self.delete_file, file)
         )  # background=BackgroundTask(self.delete_file, file)
 
     async def delete_file(self, file):
