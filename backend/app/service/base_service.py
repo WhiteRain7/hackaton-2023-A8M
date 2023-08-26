@@ -96,6 +96,16 @@ class BaseSevice:
                 cell = table.cell(j, i)
                 cell.text = data.problem[i].solution[j-1]
 
+    def generate_description_slide(self, prs: Presentation, data: CreatePresentation) -> None:
+        """Генерация третьего слайда - Описание"""
+        title_slide_layout = prs.slide_layouts[1]
+        slide = prs.slides.add_slide(title_slide_layout)
+        # print(slide.placeholders[0], slide.placeholders[1].name)
+        _title = slide.shapes.title
+        description = slide.placeholders[1]
+        _title.text = "Описание"
+        description.text = data.description
+
     async def create_presentation(self, data: CreatePresentation):
         prs = self.generate_template()
         # TODO: цвета + шрифты
@@ -109,6 +119,7 @@ class BaseSevice:
 
         self.generate_title_slide(prs, data)
         self.generate_problems_slide(prs, data)
+        self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
 
         prs.save(str(file))
