@@ -103,6 +103,8 @@
             </menu>
         </dialog>
 
+        <logoEditor ref="logoEditor" />
+
         <main id="main">
             <form id="main-form" method="POST" action="http://localhost:8000/presentation/" target="_self" @submit="send($event)">
                 <fieldset class="slide main-slide" id="main-slide">
@@ -171,6 +173,11 @@
                             <option value="pdf">Портативный документ (.pdf)</option>
                         </select>
                     </div-->
+
+                    <div>
+                        <label for="logotype">Логотип</label>
+                        <button type="button" @click="$refs.logoEditor.show_logo_editor()">редактор</button>
+                    </div>
                 </fieldset>
 
                 <fieldset class="slide" id="slide-1">
@@ -847,16 +854,13 @@
             <option>тыс. руб.</option>
             <option>млн руб.</option>
         </datalist>
-
-        <footer id="footer">
-
-        </footer>
     </div>
 </template>
 
 <script>
 import NavButton from '~/components/navButton.vue';
 import navButton from '~/components/navButton.vue';
+import logoEditor from '~/components/logoEditor.vue';
 
 export default {
     name: 'indexPage',
