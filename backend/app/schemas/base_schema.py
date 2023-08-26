@@ -39,7 +39,7 @@ class Spending(BaseModel):
 
 
 class InvestingRound(BaseModel):
-    amount: Decimal = Field(
+    amount: str = Field(
         description="Сколько всего будет привлечено денег в рамках раунда, 12 слайд - Инвестиционный раунд"
     )
     stage: Stage = Field(description="Имя раунда, 12 слайд - Инвестиционный раунд")

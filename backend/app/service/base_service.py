@@ -13,6 +13,9 @@ from starlette.background import BackgroundTask
 from time import time
 from pptx.shapes.placeholder import TablePlaceholder
 
+from pptx.oxml.ns import nsdecls
+from pptx.oxml import parse_xml
+
 class BaseSevice:
     def generate_template(self) -> Presentation:
         prs = Presentation(str(settings.templates_path / "1.pptx"))
@@ -21,7 +24,7 @@ class BaseSevice:
     def generate_filename(self) -> Path:
         return settings.media_path / "test.pptx"  # f"{time()}.pptx"
     
-    def generate_table(self, slide, _rows, _cols):
+    def create_table(self, slide, _rows, _cols):
         left_inch = Inches(1.0)
         top_inch = Inches(2.0)
         width_inch = Inches(8.0)
@@ -31,15 +34,18 @@ class BaseSevice:
             left=left_inch, top=top_inch, width=width_inch, height=height_inch
         ).table
         return table
+    
+    def create_slide(self,  prs, slide_layout, title):
+        title_slide_layout = prs.slide_layouts[slide_layout]
+        slide = prs.slides.add_slide(title_slide_layout)
+        _title = slide.shapes.title
+        _title.text = title
+        return slide
 
     def generate_title_slide(self, prs: Presentation, data: CreatePresentation) -> None:
         """Генерация первого слайда - Титульник"""
-        title_slide_layout = prs.slide_layouts[0]
-        slide = prs.slides.add_slide(title_slide_layout)
-        # print(slide.placeholders[0], slide.placeholders[1].name)
-        _title = slide.shapes.title
+        slide = self.create_slide(prs, 0, data.project_name)
         _subtitle = slide.placeholders[1]
-        _title.text = data.project_name
         _subtitle.text = data.short_description
         # TODO need fix
         _subtitle_text_frame = _subtitle.text_frame
@@ -48,16 +54,13 @@ class BaseSevice:
         _subtitle_text_frame.alignment = PP_ALIGN.JUSTIFY
 
     def generate_table_slide(self, prs: Presentation, data: CreatePresentation, title: str, content_func):
-        title_and_content_layout = prs.slide_layouts[5]
-        slide = prs.slides.add_slide(title_and_content_layout)
-        _title = slide.shapes.title
-        _title.text = title
+        slide = self.create_slide(prs, 5, title)
 
         max_content_length = max(len(content_func(x)) for x in data.problem)
         _rows = max_content_length + 1
         _cols = len(data.problem)
 
-        table = self.generate_table(slide, _rows, _cols)
+        table = self.create_table(slide, _rows, _cols)
 
         for i in range(0, _cols):
             cell = table.cell(0, i)
@@ -76,30 +79,30 @@ class BaseSevice:
 
     def generate_description_slide(self, prs: Presentation, data: CreatePresentation) -> None:
         """Генерация третьего слайда - Описание"""
-        title_slide_layout = prs.slide_layouts[1]
-        slide = prs.slides.add_slide(title_slide_layout)
-        # print(slide.placeholders[0], slide.placeholders[1].name)
-        _title = slide.shapes.title
+        slide = self.create_slide(prs, 1, "Описание")
         description = slide.placeholders[1]
-        _title.text = "Описание"
         description.text = data.description
 
     def generate_members_slide(self, prs: Presentation, data: CreatePresentation):
-        raise Exception("Not implemented")
+        slide = self.create_slide(prs, 5, "Команда")
+        _rows = 2
+        _cols = len(data.members)
+        table = self.create_table(slide, _rows, _cols)
+        for i in range(0, _cols):
+            table.cell(0, i).text = data.members[i].full_name
+            table.cell(1, i).text = data.members[i].proffesion
 
     def generate_investors_slide(self, prs: Presentation, data: CreatePresentation):
         raise Exception("Not implemented")
     
     def generate_investing_rounds_slide(self, prs: Presentation, data: CreatePresentation):
-        investing_rounds = data.investing_rounds;
+        investing_rounds = data.investing_rounds
         if len(investing_rounds) > 1:
             raise Exception("Not implemented")
-        title_and_content_layout = prs.slide_layouts[5]
-        slide = prs.slides.add_slide(title_and_content_layout)
 
         stage = investing_rounds[0].stage
         amount = investing_rounds[0].amount
-
+        slide = self.create_slide(prs, 5, f"За {stage.value} будет привлечено {amount} рублей")
         _title = slide.shapes.title
         _title.text = f"За {stage.value} будет привлечено {amount} рублей"
         if investing_rounds[0].fraction:
@@ -107,7 +110,7 @@ class BaseSevice:
 
         _rows = 2
         _cols = len(investing_rounds[0].spending)
-        table = self.generate_table(slide, _rows, _cols)
+        table = self.create_table(slide, _rows, _cols)
         for i in range(0, _cols):
             print(investing_rounds[0].spending[i])
             table.cell(0, i).text = investing_rounds[0].spending[i].name
@@ -120,15 +123,12 @@ class BaseSevice:
         raise Exception("Not implemented")
     
     def generate_business_units_slide(self, prs: Presentation, data: CreatePresentation):
-        title_and_content_layout = prs.slide_layouts[5]
-        slide = prs.slides.add_slide(title_and_content_layout)
-        _title = slide.shapes.title
-        _title.text = "Бизнес-модель"
+        slide = self.create_slide(prs, 5, "Бизнес-модель")
 
         _rows = 3
         _cols = len(data.business_units)
 
-        table = self.generate_table(slide, _rows, _cols)
+        table = self.create_table(slide, _rows, _cols)
 
         for i in range(0, _cols):
             table.cell(0, i).text = data.business_units[i].name
@@ -152,6 +152,7 @@ class BaseSevice:
         self.generate_solution_slide(prs, data)
         self.generate_business_units_slide(prs, data)
         self.generate_investing_rounds_slide(prs, data)
+        self.generate_members_slide(prs, data)
 
         prs.save(str(file))
         return FileResponse(
