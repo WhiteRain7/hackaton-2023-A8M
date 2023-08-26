@@ -2,7 +2,7 @@ import collections  # noqa: F401
 import collections.abc  # noqa: F401
 from pathlib import Path
 from pptx import Presentation
-from pptx.util import Inches
+from pptx.util import Inches, Pt
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
 
 from ..schemas.base_schema import CreatePresentation
@@ -15,6 +15,12 @@ from pptx.shapes.placeholder import TablePlaceholder
 
 from pptx.oxml.ns import nsdecls
 from pptx.oxml import parse_xml
+from pptx.dml.color import RGBColor
+
+from io import BytesIO
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 class BaseSevice:
     def generate_template(self) -> Presentation:
@@ -33,6 +39,25 @@ class BaseSevice:
             rows=_rows, cols=_cols,
             left=left_inch, top=top_inch, width=width_inch, height=height_inch
         ).table
+
+        table.first_col = False
+        table.first_row = False
+
+        # Clear cell styles
+        for row in table.rows:
+            for cell in row.cells:
+                cell.text = ""
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = RGBColor(255, 255, 255)
+                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+                for paragraph in cell.text_frame.paragraphs:
+                    paragraph.alignment = PP_ALIGN.CENTER # Don't work
+                    for run in paragraph.runs:
+                        run.font.size = Pt(18)
+                        run.font.bold = None
+                        run.font.italic = None
+                        run.font.color.rgb = RGBColor(0, 0, 0)
+                        
         return table
     
     def create_slide(self,  prs, slide_layout, title):
@@ -84,6 +109,7 @@ class BaseSevice:
         description.text = data.description
 
     def generate_members_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация 10 слайда - Команда"""
         slide = self.create_slide(prs, 5, "Команда")
         _rows = 2
         _cols = len(data.members)
@@ -96,6 +122,7 @@ class BaseSevice:
         raise Exception("Not implemented")
     
     def generate_investing_rounds_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация 12 слайда - Инвестиционный раунд"""
         investing_rounds = data.investing_rounds
         if len(investing_rounds) > 1:
             raise Exception("Not implemented")
@@ -108,18 +135,42 @@ class BaseSevice:
         if investing_rounds[0].fraction:
             _title.text += f" за долю в компании {investing_rounds[0].fraction}"
 
-        _rows = 2
-        _cols = len(investing_rounds[0].spending)
+        _rows = len(investing_rounds[0].spending)
+        _cols = 2
         table = self.create_table(slide, _rows, _cols)
-        for i in range(0, _cols):
-            table.cell(0, i).text = investing_rounds[0].spending[i].name
-            table.cell(1, i).text = investing_rounds[0].spending[i].percent
+        for i in range(0, _rows):
+            table.cell(i, 0).text = investing_rounds[0].spending[i].name
+            table.cell(i, 1).text = investing_rounds[0].spending[i].percent
     
     def generate_roadmap_slide(self, prs: Presentation, data: CreatePresentation):
-        raise Exception("Not implemented")
+        """Генерация 13 слайда - Дорожная карта"""
+        slide = self.create_slide(prs, 5, "Дорожная карта")
+        fig, ax = plt.subplots(figsize=(8, 4))
+        steps = data.roadmap
+        for i, step in enumerate(steps):
+            ax.barh(i, (step.end_date - step.start_date).days, left=step.start_date.toordinal(), height=0.5, align='center')
+        ax.set_yticks(range(len(steps)))
+        ax.set_yticklabels([step.name for step in steps])
+        ax.xaxis_date()
+        # FIXME: дату на основе месяца/года
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=30))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+
+        image_stream = BytesIO()
+        plt.savefig(image_stream, format='png')
+        plt.close()
+
+        left = Inches(1)
+        top = Inches(1.5)
+        width = Inches(8)
+        height = Inches(4.5)
+        pic = slide.shapes.add_picture(image_stream, left, top, width, height)
     
     def generate_contacts_slide(self, prs: Presentation, data: CreatePresentation):
-        raise Exception("Not implemented")
+        """Генерация 14 слайда - Контакты"""
+        slide = self.create_slide(prs, 1, "Контакты")
+        description = slide.placeholders[1]
+        description.text = '\n'.join(item.value for item in data.contacts) + '\n'
     
     def generate_business_units_slide(self, prs: Presentation, data: CreatePresentation):
         slide = self.create_slide(prs, 5, "Бизнес-модель")
@@ -152,6 +203,8 @@ class BaseSevice:
         self.generate_business_units_slide(prs, data)
         self.generate_investing_rounds_slide(prs, data)
         self.generate_members_slide(prs, data)
+        self.generate_roadmap_slide(prs, data)
+        self.generate_contacts_slide(prs, data)
 
         prs.save(str(file))
         return FileResponse(
