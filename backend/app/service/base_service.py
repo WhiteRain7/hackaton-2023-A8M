@@ -255,21 +255,43 @@ class BaseSevice:
     def generate_tracktion_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 8 слайда - Трекшен"""
         slide = self.create_slide(prs, 5, "Трекшен")
-        left = Inches(1.8)
+        
+        left = Inches(3)
         top = self.get_top_min(slide) + Inches(0.5)
         width = Inches(10)
         height = Inches(4)
-        shapes = slide.shapes
+        
         tracktion = data.tracktion
-        chart_data = CategoryChartData()
-        chart_data.categories = [str(item.year) for item in tracktion]
-        chart_data.add_series("Выручка", (item.revenue for item in tracktion))
-        chart_data.add_series("Капитализация", (item.capitalization for item in tracktion))
-        chart = shapes.add_chart(
-            XL_CHART_TYPE.LINE, left, top, width, height, chart_data
-        )
+        years = [str(item.year) for item in tracktion]
+        revenue = [int(item.revenue) for item in tracktion]
+        capitalization = [int(item.capitalization) for item in tracktion]
+        
+        fig, ax1 = plt.subplots(figsize=(10, 4))
+        ax2 = ax1.twinx()
+        
+        ax2.plot(years, revenue, label='Выручка', color='tab:orange', linewidth=3)
+        ax2.set_xlabel('Год')
+        ax2.set_ylabel('Выручка', color='tab:orange')
+        ax2.tick_params(axis='y', labelcolor='tab:orange')
 
-        chart.has_title = True
+        ax1.bar(years, capitalization, label='Капитализация', color='tab:blue')
+        ax1.set_ylabel('Капитализация', color='tab:blue')
+        ax1.tick_params(axis='y', labelcolor='tab:blue')
+        
+        lines, labels = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax2.legend(lines + lines2, labels + labels2, loc='upper left')
+        
+        plt.tight_layout()
+
+        image_stream = BytesIO()
+        plt.savefig(image_stream, format='png')
+        plt.close()
+        image_stream.seek(0)
+        
+        left = Inches(1.8)
+        top = self.get_top_min(slide) + Inches(0.5)
+        pic = slide.shapes.add_picture(image_stream, left, top, width, height)
     
     def generate_finance_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 9 слайда - Финансы"""
