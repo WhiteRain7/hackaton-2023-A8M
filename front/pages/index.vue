@@ -82,8 +82,7 @@
                     <span v-if="ai_status == 'loading'"></span>
                 </div>
 
-                <div v-else id="ai-content">
-                    {{ ai_text }}
+                <div v-else id="ai-content" v-html="ai_text">
                 </div>
             </div>
             <menu id="ai-menu">
@@ -123,44 +122,44 @@
 
                     <div>
                         <label for="sphere">Сфера деятельности</label>
-                        <input type="text" id="sphere" list="sphere-list" placeholder="Сфера деятельности" v-model="sphere" />
+                        <input type="text" id="sphere" list="sphere-list" placeholder="Сфера деятельности" v-model="sphere" @change="change_churn_rate()" />
                         <datalist id="sphere-list">
-                            <option value="Advertising & Marketing">Реклама и маркетинг</option>
-                            <option value="Aero & SpaceTech">Аэро- и космические технологии</option>
-                            <option value="AgroTech">Агрокультура</option>
-                            <option value="AI">ИИ</option>
-                            <option value="AR/VR">AR/VR</option>
-                            <option value="BeautyTech">Косметология</option>
-                            <option value="BigData">Большие данные</option>
-                            <option value="Business Intelligence">Бизнес-интеллект</option>
-                            <option value="Business Software">Бизнес-программирование</option>
-                            <option value="CleanTech">Клининг</option>
-                            <option value="ConstructionTech">Строительство</option>
-                            <option value="Consumer Goods & Services">Товары и услуги</option>
-                            <option value="Cybersecurity">Кибербезопасность</option>
-                            <option value="E-commerce">Электронная коммерция</option>
-                            <option value="EdTech">Образование</option>
-                            <option value="Energy">Энергетика</option>
-                            <option value="FinTech">Финансы</option>
-                            <option value="FoodTech">Кулинария</option>
-                            <option value="Gaming">Игровая индустрия</option>
-                            <option value="GreenTech">Зелёный сектор</option>
-                            <option value="Hardware">Оборудование</option>
-                            <option value="HrTech">Кадровый сектор</option>
-                            <option value="IndustrialTech">Индустриальные технологии</option>
-                            <option value="Legal & RegTech">Юриспруденция</option>
-                            <option value="Mapping & Navigation">Геодезия</option>
-                            <option value="Media & Entertainment">Медиа и развлечения</option>
-                            <option value="MedTech">Медицина</option>
-                            <option value="Real Estate">Недвижимость</option>
-                            <option value="RetailTech">Торговля</option>
-                            <option value="SafetyTech">Безопасность</option>
-                            <option value="SportTech">Спорт</option>
-                            <option value="Telecom & Communication">Телекоммуникации</option>
-                            <option value="Transport & Logistics">Логистика</option>
-                            <option value="Travel">Туризм</option>
-                            <option value="Web3">Вэб-технологии</option>
-                            <option value="WorkTech">Работа</option>
+                            <option data-churn="19" value="Advertising & Marketing">Реклама и маркетинг</option>
+                            <option data-churn="17" value="Aero & SpaceTech">Аэро- и космические технологии</option>
+                            <option data-churn="17" value="AgroTech">Агрокультура</option>
+                            <option data-churn="14" value="AI">ИИ</option>
+                            <option data-churn="12" value="AR/VR">AR/VR</option>
+                            <option data-churn="35" value="BeautyTech">Косметология</option>
+                            <option data-churn="12" value="BigData">Большие данные</option>
+                            <option data-churn="19" value="Business Intelligence">Бизнес-интеллект</option>
+                            <option data-churn="12" value="Business Software">Бизнес-программирование</option>
+                            <option data-churn="27" value="CleanTech">Клининг</option>
+                            <option data-churn="17" value="ConstructionTech">Строительство</option>
+                            <option data-churn="56" value="Consumer Goods & Services">Товары и услуги</option>
+                            <option data-churn="12" value="Cybersecurity">Кибербезопасность</option>
+                            <option data-churn="19" value="E-commerce">Электронная коммерция</option>
+                            <option data-churn="27" value="EdTech">Образование</option>
+                            <option data-churn="11" value="Energy">Энергетика</option>
+                            <option data-churn="19" value="FinTech">Финансы</option>
+                            <option data-churn="27" value="FoodTech">Кулинария</option>
+                            <option data-churn="14" value="Gaming">Игровая индустрия</option>
+                            <option data-churn="27" value="GreenTech">Зелёный сектор</option>
+                            <option data-churn="17" value="Hardware">Оборудование</option>
+                            <option data-churn="27" value="HrTech">Кадровый сектор</option>
+                            <option data-churn="17" value="IndustrialTech">Индустриальные технологии</option>
+                            <option data-churn="27" value="Legal & RegTech">Юриспруденция</option>
+                            <option data-churn="27" value="Mapping & Navigation">Геодезия</option>
+                            <option data-churn="27" value="Media & Entertainment">Медиа и развлечения</option>
+                            <option data-churn="27" value="MedTech">Медицина</option>
+                            <option data-churn="27" value="Real Estate">Недвижимость</option>
+                            <option data-churn="19" value="RetailTech">Торговля</option>
+                            <option data-churn="31" value="SafetyTech">Безопасность</option>
+                            <option data-churn="27" value="SportTech">Спорт</option>
+                            <option data-churn="31" value="Telecom & Communication">Телекоммуникации</option>
+                            <option data-churn="40" value="Transport & Logistics">Логистика</option>
+                            <option data-churn="27" value="Travel">Туризм</option>
+                            <option data-churn="14" value="Web3">Вэб-технологии</option>
+                            <option data-churn="17" value="WorkTech">Работа</option>
                         </datalist>
                     </div>
 
@@ -1088,13 +1087,13 @@ export default {
             this.ai_status = 'waiting'
 
             if (operation == 'submit') {
-                if (typeof this.ai_for == 'string') this[this.ai_for] = this.ai_text
+                if (typeof this.ai_for == 'string') this[this.ai_for] = this.ai_text.replaceAll('<br />', '\n')
                 else if (typeof this.ai_for == 'object') {
                     let receiver = this
                     for (let i = 0; i < this.ai_for.length - 1; i++) {
                         receiver = receiver[this.ai_for[i]]
                     }
-                    receiver[this.ai_for[this.ai_for.length - 1]] = this.ai_text
+                    receiver[this.ai_for[this.ai_for.length - 1]] = this.ai_text.replaceAll('<br />', '\n')
                 }
             }
 
@@ -1118,7 +1117,7 @@ export default {
                 }
             )
 
-            this.ai_text = (await response.text()).replaceAll('\\n', '')
+            this.ai_text = (await response.text()).replaceAll('\\n', '<br />')
             this.ai_status = 'done'
         },
 
@@ -1324,7 +1323,7 @@ export default {
                 request += this.add_to_request('sphere')
 
                 let market_type = this.market[i].type
-                request += this.finish_request(`Write me a name of ${market_type} market for this project in a few words based on my data above.`)
+                request += this.finish_request(`Write me an audience or group of users or sphere in economy of ${market_type} market for this project in a few words based on my data above.`)
 
                 const response = await fetch(
                     'http://127.0.0.1:8000/hugchat/',
@@ -1394,6 +1393,16 @@ export default {
             }
         },
 
+        change_churn_rate: function () {
+            let options = document.getElementById('sphere-list')
+            if (!options) return
+
+            let option = options.querySelector(`[value="${this.sphere}"]`)
+            if (!option) return
+
+            if (this.churn_rate == 0) this.churn_rate = option.dataset.churn
+        },
+
         scroll_to: function (id) {
             try {
                 document.getElementById(id).scrollIntoView({
@@ -1428,7 +1437,8 @@ export default {
                 reader.readAsDataURL(input.files[0]);
             }
             else {
-                this.members[member_id].photo = null;
+                try { this.members[member_id].photo = null; } catch {}
+                try { this.investors[investor_id].image = null; } catch {}
             }
         },
 
