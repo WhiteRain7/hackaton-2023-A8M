@@ -27,7 +27,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_TICK_MARK
 from pptx.enum.chart import XL_LABEL_POSITION
 
-from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.enum.shapes import MSO_SHAPE_TYPE, MSO_SHAPE
 
 class BaseSevice:
     def generate_template(self) -> Presentation:
@@ -141,7 +141,7 @@ class BaseSevice:
         for i, market_unit in enumerate(data.market):
             left_offset = i * Inches(3.25)
             shape = shapes.add_shape(
-                MSO_SHAPE_TYPE.TEXT_BOX, left + left_offset, top, width, height
+                MSO_SHAPE.ROUNDED_RECTANGLE, left + left_offset, top, width, height
             )
             
             fill = shape.fill
@@ -172,7 +172,6 @@ class BaseSevice:
             name.font.bold = False
             name.alignment = PP_ALIGN.CENTER
             name.margin_top = Pt(8)
-
     
     def generate_investing_rounds_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 12 слайда - Инвестиционный раунд"""
