@@ -87,6 +87,18 @@ class TracktionUnit(BaseModel):
     capitalization: str = Field(description="Капитализация, 8 слайд - Трекшен")
 
 
+class MarketType(str, Enum):
+    tam = "TAM"
+    sam = "SAM"
+    som = "SOM"
+
+
+class MarketUnit(BaseModel):
+    type: MarketType = Field(description="Тип, 5 слайд - Рынок")
+    name: str = Field(description="Название, 5 слайд - Рынок")
+    volume: str = Field(description="Объем, 5 слайд - Рынок")
+
+
 class CreatePresentation(BaseModel):
     project_name: str = Field(description="Название проекта/компании, первый слайд - Проект")
     short_description: str = Field(
@@ -96,8 +108,8 @@ class CreatePresentation(BaseModel):
         description="Проблемы, второй-четвертый слайд - Проблема и Решение"
     )
     description: str = Field(description="Описание, третий слайд - Описание")
-    # TODO: TAM SAM SOM слайд 5 - Рынок
-    # TODO Конкуренты 6 слайд, парсинг, на основе предыдущих 4 слайдов данные
+    market: list[MarketUnit] = Field(description="Рынки TAM SAM SOM, 5 слайд - Рынок")
+    opponents: list[str] = Field(description="Конкуренты, 6 слайд")
     business_units: list[BusinessUnit] = Field(description="Бизнес-юниты, 7 слайд - Бизнес-модель")
     clients: list[str] = Field(description="Клиенты, maybe 8 слайд")  # TODO изображения
     tracktion: list[TracktionUnit] = Field(description="Трекшены, 8 слайд - Трекшен")

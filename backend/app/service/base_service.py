@@ -5,7 +5,7 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
 
-from ..schemas.base_schema import CreatePresentation
+from ..schemas.base_schema import CreatePresentation, MarketType
 from ..config import settings
 from fastapi.responses import FileResponse
 import anyio
@@ -26,6 +26,8 @@ from pptx.enum.chart import XL_CHART_TYPE
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_TICK_MARK
 from pptx.enum.chart import XL_LABEL_POSITION
+
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 class BaseSevice:
     def generate_template(self) -> Presentation:
@@ -125,6 +127,52 @@ class BaseSevice:
 
     def generate_investors_slide(self, prs: Presentation, data: CreatePresentation):
         raise Exception("Not implemented")
+    def generate_opponents_slide(self, prs: Presentation, data: CreatePresentation):
+        raise Exception("Not implemented")
+    
+    def generate_market_slide(self, prs: Presentation, data: CreatePresentation):
+        """Генерация 5 слайда - Рынок"""
+        slide = self.create_slide(prs, 5, "Рынок")
+        left = Inches(0.25)
+        top = Inches(2)
+        width = Inches(3)
+        height = Inches(3)
+        shapes = slide.shapes
+        for i, market_unit in enumerate(data.market):
+            left_offset = i * Inches(3.25)
+            shape = shapes.add_shape(
+                MSO_SHAPE_TYPE.TEXT_BOX, left + left_offset, top, width, height
+            )
+            
+            fill = shape.fill
+            if market_unit.type == MarketType.tam:
+                fill.solid()
+                fill.fore_color.rgb = RGBColor(0, 0, 120)
+            elif market_unit.type == MarketType.sam:
+                fill.solid()
+                fill.fore_color.rgb = RGBColor(0, 0, 160)
+            elif market_unit.type == MarketType.som:
+                fill.solid()
+                fill.fore_color.rgb = RGBColor(0, 0, 200)
+            
+            head = shape.text_frame.add_paragraph()
+            head.text = market_unit.type.value
+            head.font.bold = True
+            head.font.size = Pt(32)
+            head.alignment = PP_ALIGN.CENTER
+            
+            volume = shape.text_frame.add_paragraph()
+            volume.text = market_unit.volume
+            volume.font.bold = True
+            volume.font.size = Pt(24)
+            volume.alignment = PP_ALIGN.CENTER
+
+            name = shape.text_frame.add_paragraph()
+            name.text = market_unit.name
+            name.font.bold = False
+            name.alignment = PP_ALIGN.CENTER
+            name.margin_top = Pt(8)
+
     
     def generate_investing_rounds_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 12 слайда - Инвестиционный раунд"""
@@ -225,6 +273,7 @@ class BaseSevice:
         self.generate_problems_slide(prs, data)
         self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
+        self.generate_market_slide(prs, data)
         self.generate_business_units_slide(prs, data)
         self.generate_tracktion_slide(prs, data)
         self.generate_members_slide(prs, data)
