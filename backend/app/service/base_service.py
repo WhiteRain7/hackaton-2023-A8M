@@ -117,10 +117,17 @@ class BaseSevice:
             table.cell(1, i).text = data.members[i].proffesion
 
     def generate_investors_slide(self, prs: Presentation, data: CreatePresentation):
-        raise Exception("Not implemented")
+        """Генерация 11 слайда - Инвесторы"""
+        slide = self.create_slide(prs, 1, "Инвесторы")
+        description = slide.placeholders[1]
+        description.text = '\n'.join(item.name for item in data.investors) + '\n'
+
     def generate_opponents_slide(self, prs: Presentation, data: CreatePresentation):
-        raise Exception("Not implemented")
-    
+        """Генерация 6 слайда - Конкуренты"""
+        slide = self.create_slide(prs, 1, "Конкуренты")
+        description = slide.placeholders[1]
+        description.text = '\n'.join(data.opponents) + '\n'
+
     def generate_market_slide(self, prs: Presentation, data: CreatePresentation):
         """Генерация 5 слайда - Рынок"""
         slide = self.create_slide(prs, 5, "Рынок")
@@ -269,11 +276,15 @@ class BaseSevice:
         self.generate_description_slide(prs, data)
         self.generate_solution_slide(prs, data)
         self.generate_market_slide(prs, data)
+        if (len(data.opponents)):
+            self.generate_opponents_slide(prs, data)
         self.generate_business_units_slide(prs, data)
         self.generate_tracktion_slide(prs, data)
         self.generate_finance_slide(prs, data)
         self.generate_members_slide(prs, data)
-        self.generate_investing_rounds_slide(prs, data) # переделать в виде круговой диаграммы
+        if (len(data.investors)):
+            self.generate_investors_slide(prs, data)
+        self.generate_investing_rounds_slide(prs, data)
         self.generate_roadmap_slide(prs, data)
         self.generate_contacts_slide(prs, data)
 
