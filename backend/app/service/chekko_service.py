@@ -50,13 +50,19 @@ class ChekkoService:
             # Извлекаем информацию
             contacts_section = tree.xpath('//section[@id="contacts"]')[0]
 
+            phone = contacts_section.xpath(
+                    './/strong[text()="Телефон"]/following-sibling::a/text()'
+                )
+            if not phone:
+                phone = contacts_section.xpath(
+                    './/strong[text()="Телефоны"]/following-sibling::a/text()'
+                )
+
             contacts_data = {
                 "Адрес": contacts_section.xpath(
                     './/div[@class="uk-text-bold"]/following-sibling::div[1]/text()'
                 )[0].strip(),
-                "Телефон": contacts_section.xpath(
-                    './/strong[text()="Телефон"]/following-sibling::a/text()'
-                )[0].strip(),
+                "Телефон": phone[0].strip(),
                 "Электронная почта": contacts_section.xpath(
                     './/div[@class="uk-text-bold"][text()="Электронная почта"]/following-sibling::a/text()'
                 )[0].strip(),
