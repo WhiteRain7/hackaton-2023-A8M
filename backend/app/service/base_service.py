@@ -36,6 +36,7 @@ import io
 import base64
 from PIL import Image, PngImagePlugin
 from ..hugchat.api import call_api
+from matplotlib.dates import DayLocator, MonthLocator, YearLocator
 import re
 
 
@@ -237,10 +238,17 @@ class BaseSevice:
             )
         ax.set_yticks(range(len(steps)))
         ax.set_yticklabels([step.name for step in steps])
+
+        mentioned_dates = [step.start_date for step in steps] + [step.end_date for step in steps]
+
+        yloc = YearLocator()
+        mloc = MonthLocator()
+        nloc = DayLocator(interval=7)
+        dloc = DayLocator()
         ax.xaxis_date()
         # FIXME: дату на основе месяца/года
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=30))
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
         image_stream = BytesIO()
         plt.savefig(image_stream, format="png")
