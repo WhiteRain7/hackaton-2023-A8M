@@ -257,6 +257,7 @@ class BaseSevice:
         else:
             ax.xaxis.set_major_locator(nloc)
             ax.xaxis.set_minor_locator(dloc)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
         image_stream = BytesIO()
         plt.savefig(image_stream, format="png")
